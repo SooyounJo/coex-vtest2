@@ -8,7 +8,7 @@ function Bubble() {
     uniforms: {
       time: { value: 0 },
       lightDir: { value: new THREE.Vector3(0.2, 0.9, 0.3).normalize() },
-      ringDir: { value: new THREE.Vector3(0.08, 0.58, 0.82).normalize() },
+      ringDir: { value: new THREE.Vector3(0.08, 0.56, 0.86).normalize() },
     },
     vertexShader: `
       varying vec2 vUv;
@@ -23,6 +23,7 @@ function Bubble() {
       }
     `,
     fragmentShader: `
+      precision highp float;
       uniform float time;
       uniform vec3 lightDir;
       uniform vec3 ringDir;
@@ -47,16 +48,19 @@ function Bubble() {
 
       // 주기적(원형) 가중치 제거: 한 방향으로만 이동하는 부드러운 밴드
       float bumpMove(float center, float width, float f) {
-        float b0 = smoothstep(width, 0.0, abs(f - (center - 1.0)));
-        float b1 = smoothstep(width, 0.0, abs(f - center));
-        float b2 = smoothstep(width, 0.0, abs(f - (center + 1.0)));
-        return clamp(b0 + b1 + b2, 0.0, 1.0);
+        // 원형 타일 고려
+        float d0 = abs(f - (center - 1.0));
+        float d1 = abs(f - center);
+        float d2 = abs(f - (center + 1.0));
+        float d  = min(d0, min(d1, d2));
+        // fwidth 기반 에지 AA로 계단 현상 최소화
+        float aa = fwidth(f) * 1.5;
+        return smoothstep(width + aa, 0.0 + aa, d);
       }
 
       // 컬러 밴드 가중치 (한 방향 이동)
       vec3 bandWeights(float f) {
-        // 면적은 유지하되, 경계가 조금 더 또렷하도록 폭을 약간 좁힘
-        float width = 0.28; // 0.36 -> 0.28
+        float width = 0.28;
         float y = bumpMove(0.18, width, f);
         float p = bumpMove(0.52, width, f);
         float u = bumpMove(0.86, width, f);
@@ -79,11 +83,11 @@ function Bubble() {
         vec3 base = mix(pink, peach, clamp(0.5 + 0.5*topness, 0.0, 1.0));
         base = mix(base, purple, smoothstep(0.0, 0.35, 1.0 - topness));
 
-        float speed = 0.05;
+        float speed = 0.08; // 기존 0.05 -> 0.08 더 빠르게
         float scale = 1.8;
         float phase = -time * speed;
         float f1 = topness * scale + phase;
-        float f2 = topness * scale + phase + 0.045; // 0.08 -> 0.045 블러 감소
+        float f2 = topness * scale + phase + 0.045;
 
         vec3 w1 = bandWeights(f1);
         vec3 w2 = bandWeights(f2);
@@ -121,9 +125,9 @@ function Bubble() {
         lit += vec3(0.72, 0.57, 1.02) * (1.0 - topness) * 0.14;
 
         vec3 gray = vec3(dot(lit, vec3(0.299, 0.587, 0.114)));
-        lit = mix(gray, lit, 1.65);
+        lit = mix(gray, lit, 1.80); // 채도 더 상승 (1.65 -> 1.80)
         lit = pow(lit, vec3(0.88));
-        lit *= 1.08;
+        lit *= 1.10;                // 노출 살짝 증가
         lit = mix(lit, vec3(1.0), 0.06);
         lit = clamp(lit, 0.0, 1.1);
 
@@ -151,7 +155,7 @@ function Bubble() {
 
   return (
     <mesh ref={meshRef} position={[0, yBottom, 0]}>
-      <sphereGeometry args={[radius, 192, 192]} />
+      <sphereGeometry args={[radius, 256, 256]} />
       <primitive object={material} attach="material" />
     </mesh>
   )
@@ -165,7 +169,8 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <Canvas className="r3f-canvas"
-        dpr={[1, 2]}
+        dpr={[1, 3]}
+        gl={{ antialias: true, powerPreference: 'high-performance' }}
         camera={{ position: [0, 0, 6], fov: 50 }}>
         <color attach="background" args={["#f3f4f6"]} />
         <ambientLight intensity={0.3} />
