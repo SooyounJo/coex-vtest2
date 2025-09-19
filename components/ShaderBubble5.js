@@ -2,12 +2,12 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 
-export default function ShaderBubble3() {
+export default function ShaderBubble5() {
   const material = useMemo(() => new THREE.ShaderMaterial({
     uniforms: {
       time: { value: 0 },
       lightDir: { value: new THREE.Vector3(0.2, 0.9, 0.3).normalize() },
-      ringDir: { value: new THREE.Vector3(0.12, 0.50, 0.88).normalize() },
+      ringDir: { value: new THREE.Vector3(0.08, 0.56, 0.86).normalize() },
     },
     vertexShader: `
       uniform float time;
@@ -33,30 +33,56 @@ export default function ShaderBubble3() {
         return mix(mix(a,b,u.x), mix(c,d,u.x), u.y);
       }
       
-      // 유기적인 물결 효과 (매우 약화)
-      float organicWave(vec3 pos, float time) {
-        float wave1 = sin(pos.x * 2.0 + time * 0.4) * cos(pos.z * 1.8 + time * 0.3);
-        float wave2 = sin(pos.x * 3.5 + time * 0.6) * cos(pos.z * 2.8 + time * 0.5);
-        float wave3 = sin(pos.x * 5.0 + time * 0.8) * cos(pos.z * 3.5 + time * 0.7);
+      // 물방울 떨어지는 효과
+      float waterDropEffect(vec3 pos, float time) {
+        // 떨어지는 물방울들의 위치
+        float drop1 = sin(time * 2.0) * 0.3 + 0.5;
+        float drop2 = sin(time * 1.7 + 1.5) * 0.25 + 0.5;
+        float drop3 = sin(time * 2.3 + 3.1) * 0.2 + 0.5;
         
-        float noiseWave1 = noise(pos.xy * 1.5 + time * 0.2) * 0.15;
-        float noiseWave2 = noise(pos.yz * 2.0 + time * 0.4) * 0.1;
-        float noiseWave3 = noise(pos.zx * 2.5 + time * 0.6) * 0.08;
+        // 각 물방울의 영향 범위
+        float dist1 = length(pos.xy - vec2(0.2, drop1));
+        float dist2 = length(pos.xy - vec2(-0.3, drop2));
+        float dist3 = length(pos.xy - vec2(0.4, drop3));
         
-        float waveX = (wave1 + wave2 * 0.6 + wave3 * 0.4) * 0.02;
-        float waveY = noiseWave1 + noiseWave2 * 0.5 + noiseWave3 * 0.3;
-        float waveZ = sin(pos.y * 2.5 + time * 0.5) * cos(pos.x * 2.0 + time * 0.4) * 0.015;
+        // 물방울이 떨어질 때의 파문 효과
+        float ripple1 = sin(dist1 * 20.0 - time * 15.0) * exp(-dist1 * 8.0) * 0.02;
+        float ripple2 = sin(dist2 * 18.0 - time * 12.0) * exp(-dist2 * 6.0) * 0.015;
+        float ripple3 = sin(dist3 * 22.0 - time * 18.0) * exp(-dist3 * 7.0) * 0.018;
         
-        return waveX + waveY * 0.02 + waveZ;
+        // 물방울이 떨어질 때의 흔들림 효과
+        float shake1 = sin(time * 8.0) * exp(-dist1 * 5.0) * 0.01;
+        float shake2 = sin(time * 6.0 + 1.0) * exp(-dist2 * 4.0) * 0.008;
+        float shake3 = sin(time * 10.0 + 2.0) * exp(-dist3 * 6.0) * 0.012;
+        
+        return ripple1 + ripple2 + ripple3 + shake1 + shake2 + shake3;
+      }
+      
+      // 물방울 표면의 유동적인 변형
+      float waterSurfaceDeform(vec3 pos, float time) {
+        float wave1 = sin(pos.x * 3.0 + time * 2.0) * cos(pos.y * 2.5 + time * 1.5) * 0.015;
+        float wave2 = sin(pos.x * 5.0 + time * 3.0) * cos(pos.y * 4.0 + time * 2.5) * 0.008;
+        float wave3 = sin(pos.x * 7.0 + time * 4.0) * cos(pos.y * 6.0 + time * 3.5) * 0.005;
+        
+        // 노이즈 기반 미세한 변형
+        float noise1 = noise(pos.xy * 2.0 + time * 0.5) * 0.01;
+        float noise2 = noise(pos.yz * 1.5 + time * 0.7) * 0.008;
+        float noise3 = noise(pos.zx * 2.5 + time * 0.9) * 0.006;
+        
+        return wave1 + wave2 + wave3 + noise1 + noise2 + noise3;
       }
       
       void main() {
         vUv = uv;
         vec3 pos = position;
         
-        // 유기적인 물결 효과 적용
-        float waveDistortion = organicWave(pos, time);
-        pos += normal * waveDistortion;
+        // 물방울 떨어지는 효과 적용
+        float dropEffect = waterDropEffect(pos, time);
+        pos += normal * dropEffect;
+        
+        // 물방울 표면의 유동적인 변형
+        float surfaceDeform = waterSurfaceDeform(pos, time);
+        pos += normal * surfaceDeform;
         
         vNormal = normalize(normalMatrix * normal);
         vec4 worldPos = modelMatrix * vec4(pos, 1.0);
@@ -139,18 +165,26 @@ export default function ShaderBubble3() {
         float loopT   = mod(time, loopSec) / loopSec;
         float phase = -loopT;
         
-        // 일렁이는 빛 효과
-        float ripple1 = noise(vUv * 3.0 + time * 0.5) * 0.1;
-        float ripple2 = noise(vUv * 5.0 + time * 0.3) * 0.05;
-        float ripple3 = noise(vUv * 7.0 + time * 0.7) * 0.03;
+        // 물방울 떨어지는 효과를 위한 리플
+        float drop1 = sin(time * 2.0) * 0.3 + 0.5;
+        float drop2 = sin(time * 1.7 + 1.5) * 0.25 + 0.5;
+        float drop3 = sin(time * 2.3 + 3.1) * 0.2 + 0.5;
+        
+        float dist1 = length(vUv - vec2(0.2, drop1));
+        float dist2 = length(vUv - vec2(-0.3, drop2));
+        float dist3 = length(vUv - vec2(0.4, drop3));
+        
+        float ripple1 = sin(dist1 * 20.0 - time * 15.0) * exp(-dist1 * 8.0) * 0.1;
+        float ripple2 = sin(dist2 * 18.0 - time * 12.0) * exp(-dist2 * 6.0) * 0.08;
+        float ripple3 = sin(dist3 * 22.0 - time * 18.0) * exp(-dist3 * 7.0) * 0.09;
         float totalRipple = ripple1 + ripple2 + ripple3;
         
-        // 일레스틱 웨이브 효과
+        // 일레스틱 웨이브 효과 (물방울 효과와 결합)
         float elastic1 = elasticWave(topness * 2.0 + time * 0.4, 3.0, 0.15);
         float elastic2 = elasticWave(topness * 3.0 + time * 0.6, 2.0, 0.08);
         float totalElastic = elastic1 + elastic2;
         
-        // 블러 효과
+        // 블러 효과 (물방울의 흔들림을 강조)
         float blurAmount = 0.08;
         float f1 = topness * scale + phase + totalRipple + totalElastic;
         float f2 = topness * scale + phase + blurAmount + totalRipple * 0.8 + totalElastic * 0.6;
@@ -166,10 +200,10 @@ export default function ShaderBubble3() {
         float wobble3 = 0.997 + 0.003*n2(vUv*2.2 + time*0.06 + 3.1);
         w1 *= wobble1; w2 *= wobble2; w3 *= wobble3;
 
-        // 마젠타 중심 색상 팔레트
-        vec3 cY = vec3(1.00, 0.60, 0.80);  // 핫핑크
-        vec3 cP = vec3(0.90, 0.30, 0.70);  // 딥마젠타
-        vec3 cU = vec3(0.70, 0.20, 0.60);  // 다크마젠타
+        // 오션 블루 색상 팔레트 (2번 스타일과 동일)
+        vec3 cY = vec3(0.40, 0.80, 1.00);  // 오션 블루
+        vec3 cP = vec3(0.20, 0.60, 0.90);  // 딥 블루
+        vec3 cU = vec3(0.10, 0.40, 0.80);  // 다크 블루
 
         w1 *= vec3(0.18, 1.0, 0.95);
         w2 *= vec3(0.18, 1.0, 0.95);
@@ -188,26 +222,26 @@ export default function ShaderBubble3() {
         vec3 lit = base;
         lit = mix(lit, flowColor, flowMaskAvg * 0.8);
         
-        // 일렁이는 빛 효과 적용 (마젠타)
-        vec3 rippleColor = vec3(1.0, 0.7, 0.9) * totalRipple * 0.3;
-        vec3 elasticColor = vec3(0.9, 0.5, 0.8) * totalElastic * 0.2;
+        // 물방울 떨어지는 효과의 색상 (오션 블루)
+        vec3 rippleColor = vec3(0.3, 0.7, 1.0) * totalRipple * 0.4;
+        vec3 elasticColor = vec3(0.2, 0.6, 0.9) * totalElastic * 0.3;
         lit += rippleColor + elasticColor;
 
         vec3 V = vec3(0.0, 0.0, 1.0);
         float fres = pow(1.0 - max(dot(N, V), 0.0), 2.6);
-        vec3 rimGlow = vec3(0.9, 0.4, 0.7) * fres * 0.36;
+        vec3 rimGlow = vec3(0.2, 0.6, 1.0) * fres * 0.5;
         float softHalo = smoothstep(0.34, 0.10, r) * 0.13;
-        vec3 glow = rimGlow + vec3(0.8, 0.5, 0.7) * softHalo;
+        vec3 glow = rimGlow + vec3(0.3, 0.7, 1.0) * softHalo;
         lit += glow;
 
-        lit += vec3(0.7, 0.3, 0.6) * (1.0 - topness) * 0.14;
+        lit += vec3(0.1, 0.5, 0.8) * (1.0 - topness) * 0.2;
 
         vec3 gray = vec3(dot(lit, vec3(0.299, 0.587, 0.114)));
         lit = mix(gray, lit, 2.2);
         lit = pow(lit, vec3(0.85));
         lit *= 1.15;
         lit = mix(lit, vec3(1.0), 0.05);
-        lit = clamp(lit, 0.0, 1.2);
+        lit = clamp(lit, 0.0, 1.1);
 
         float edgeFeather = smoothstep(0.52, 0.36, r);
         float alpha = 0.80 * edgeFeather + fres*0.10;
@@ -237,16 +271,6 @@ export default function ShaderBubble3() {
       <mesh ref={meshRef} position={[0, yBottom, 0]}>
         <sphereGeometry args={[radius, 256, 256]} />
         <primitive object={material} attach="material" />
-      </mesh>
-      
-      {/* 배경 구 */}
-      <mesh position={[0, yBottom, -0.5]}>
-        <sphereGeometry args={[radius * 1.2, 128, 128]} />
-        <meshBasicMaterial 
-          transparent 
-          opacity={0.0}
-          side={THREE.DoubleSide}
-        />
       </mesh>
     </>
   )

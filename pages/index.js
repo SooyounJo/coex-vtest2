@@ -4,6 +4,8 @@ import { Canvas } from '@react-three/fiber'
 import ShaderBubble from '../components/ShaderBubble'
 import ShaderBubble2 from '../components/ShaderBubble2'
 import ShaderBubble3 from '../components/ShaderBubble3'
+import ShaderBubble4 from '../components/ShaderBubble4'
+import ShaderBubble5 from '../components/ShaderBubble5'
 
 export default function Home() {
   const [selectedStyle, setSelectedStyle] = useState(1)
@@ -13,6 +15,9 @@ export default function Home() {
       <Head>
         <title>Shader Bubble</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin />
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
       </Head>
 
       <div className="app-container">
@@ -30,8 +35,17 @@ export default function Home() {
             {selectedStyle === 1 ? <ShaderBubble styleType={selectedStyle} /> : 
              selectedStyle === 2 ? <ShaderBubble2 /> : 
              selectedStyle === 3 ? <ShaderBubble3 /> : 
+             selectedStyle === 4 ? <ShaderBubble4 /> : 
+             selectedStyle === 5 ? <ShaderBubble5 /> : 
              <ShaderBubble styleType={selectedStyle} />}
           </Canvas>
+          
+          {/* 1번 버튼 선택 시 제목 표시 */}
+          {selectedStyle === 1 && (
+            <div className="title-overlay">
+              <h1 className="style-title">연분홍 파동</h1>
+            </div>
+          )}
         </div>
 
         {/* 버튼 컨트롤 */}
@@ -61,6 +75,25 @@ export default function Home() {
         .canvas-container {
           flex: 1;
           position: relative;
+        }
+
+        .title-overlay {
+          position: absolute;
+          top: 50px;
+          left: 50%;
+          transform: translateX(-50%);
+          z-index: 5;
+        }
+
+        .style-title {
+          color: #ffb6c1;
+          font-family: 'Noto Sans KR', sans-serif;
+          font-size: 2.5rem;
+          font-weight: 700;
+          margin: 0;
+          text-align: center;
+          text-shadow: 0 2px 4px rgba(255, 182, 193, 0.3);
+          letter-spacing: 0.1em;
         }
 
         .r3f-canvas {
@@ -150,6 +183,14 @@ export default function Home() {
             width: 40px;
             height: 40px;
             font-size: 1rem;
+          }
+
+          .title-overlay {
+            top: 30px;
+          }
+
+          .style-title {
+            font-size: 2rem;
           }
         }
       `}</style>
