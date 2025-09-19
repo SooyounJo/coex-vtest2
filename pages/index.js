@@ -3,6 +3,7 @@ import Head from 'next/head'
 import { Canvas } from '@react-three/fiber'
 import ShaderBubble from '../components/ShaderBubble'
 import ShaderBubble2 from '../components/ShaderBubble2'
+import ShaderBubble3 from '../components/ShaderBubble3'
 
 export default function Home() {
   const [selectedStyle, setSelectedStyle] = useState(1)
@@ -26,7 +27,10 @@ export default function Home() {
             <color attach="background" args={["#f3f4f6"]} />
             <ambientLight intensity={0.3} />
             <directionalLight position={[2, 3, 2]} intensity={0.5} />
-            {selectedStyle === 2 ? <ShaderBubble2 /> : <ShaderBubble styleType={selectedStyle} />}
+            {selectedStyle === 1 ? <ShaderBubble styleType={selectedStyle} /> : 
+             selectedStyle === 2 ? <ShaderBubble2 /> : 
+             selectedStyle === 3 ? <ShaderBubble3 /> : 
+             <ShaderBubble styleType={selectedStyle} />}
           </Canvas>
         </div>
 
