@@ -83,18 +83,26 @@ function Bubble() {
         vec3 base = mix(pink, peach, clamp(0.5 + 0.5*topness, 0.0, 1.0));
         base = mix(base, purple, smoothstep(0.0, 0.35, 1.0 - topness));
 
-        float speed = 0.08; // 기존 0.05 -> 0.08 더 빠르게
+        float speed = 0.10; // 0.08 -> 0.10 살짝 더 빠르게
         float scale = 1.8;
-        float phase = -time * speed;
+        // 완전한 무한 루프: 주기(loopSec)마다 동일한 상태로 복귀
+        float loopSec = 10.0;                 // 10초 주기 (현재 체감 속도 유지)
+        float loopT   = mod(time, loopSec) / loopSec; // 0..1
+        float phase = -loopT;                  // 1 주기 당 phase -1 진행
         float f1 = topness * scale + phase;
-        float f2 = topness * scale + phase + 0.045;
+        float f2 = topness * scale + phase + 0.07;   // 블러 소폭 증가
+        float f3 = topness * scale + phase + 0.12;   // 추가 꼬리 샘플로 젖어드는 느낌
 
-        vec3 w1 = bandWeights(f1);
-        vec3 w2 = bandWeights(f2);
+        // 저주파 퍼터베이션으로 물감 번짐 느낌
+        float perturb = 0.02 * n2(vUv*1.5 + time*0.05);
+        vec3 w1 = bandWeights(f1 + perturb);
+        vec3 w2 = bandWeights(f2 + perturb*0.8);
+        vec3 w3 = bandWeights(f3 + perturb*0.6);
 
         float wobble1 = 0.997 + 0.003*n2(vUv*2.2 + time*0.06);
         float wobble2 = 0.997 + 0.003*n2(vUv*2.2 + time*0.06 + 1.7);
-        w1 *= wobble1; w2 *= wobble2;
+        float wobble3 = 0.997 + 0.003*n2(vUv*2.2 + time*0.06 + 3.1);
+        w1 *= wobble1; w2 *= wobble2; w3 *= wobble3;
 
         // 컬러 팔레트: 제공된 이미지의 컬러(피치 옐로우, 핑크, 라벤더)
         vec3 cY = vec3(1.00, 0.84, 0.70);
@@ -103,32 +111,36 @@ function Bubble() {
 
         w1 *= vec3(0.18, 1.0, 0.95);
         w2 *= vec3(0.18, 1.0, 0.95);
+        w3 *= vec3(0.18, 1.0, 0.95);
 
         vec3 flowColor1 = cY * w1.x + cP * w1.y + cU * w1.z;
         vec3 flowColor2 = cY * w2.x + cP * w2.y + cU * w2.z;
-        vec3 flowColor  = 0.5 * (flowColor1 + flowColor2);
+        vec3 flowColor3 = cY * w3.x + cP * w3.y + cU * w3.z;
+        // 가중 평균: 앞쪽이 더 강하고 뒤로 갈수록 약하게
+        vec3 flowColor  = (0.5*flowColor1 + 0.35*flowColor2 + 0.15*flowColor3);
 
         float mask1 = clamp(w1.x + w1.y + w1.z, 0.0, 1.0);
         float mask2 = clamp(w2.x + w2.y + w2.z, 0.0, 1.0);
-        float flowMaskAvg = clamp(0.5 * (mask1 + mask2), 0.0, 1.0);
+        float mask3 = clamp(w3.x + w3.y + w3.z, 0.0, 1.0);
+        float flowMaskAvg = clamp((0.5*mask1 + 0.35*mask2 + 0.15*mask3), 0.0, 1.0);
 
         vec3 lit = base;
         lit = mix(lit, flowColor, flowMaskAvg * 0.95);
 
         vec3 V = vec3(0.0, 0.0, 1.0);
         float fres = pow(1.0 - max(dot(N, V), 0.0), 2.6);
-        vec3 rimGlow = vec3(0.82, 0.66, 1.10) * fres * 0.30;
-        float softHalo = smoothstep(0.34, 0.10, r) * 0.10;
+        vec3 rimGlow = vec3(0.82, 0.66, 1.10) * fres * 0.36; // 블룸 소폭 증가 (0.30 -> 0.36)
+        float softHalo = smoothstep(0.34, 0.10, r) * 0.13;    // 0.10 -> 0.13
         vec3 glow = rimGlow + vec3(1.0, 0.92, 0.98) * softHalo;
         lit += glow;
 
         lit += vec3(0.72, 0.57, 1.02) * (1.0 - topness) * 0.14;
 
         vec3 gray = vec3(dot(lit, vec3(0.299, 0.587, 0.114)));
-        lit = mix(gray, lit, 1.80); // 채도 더 상승 (1.65 -> 1.80)
-        lit = pow(lit, vec3(0.88));
-        lit *= 1.10;                // 노출 살짝 증가
-        lit = mix(lit, vec3(1.0), 0.06);
+        lit = mix(gray, lit, 2.00); // 채도 증가 (1.80 -> 2.00)
+        lit = pow(lit, vec3(0.86)); // 약간 더 밝게 (0.88 -> 0.86)
+        lit *= 1.12;                // 노출 소폭 증가 (1.10 -> 1.12)
+        lit = mix(lit, vec3(1.0), 0.05); // 화이트 믹스 소폭 감소로 쨍함 유지 (0.06 -> 0.05)
         lit = clamp(lit, 0.0, 1.1);
 
         float edgeFeather = smoothstep(0.52, 0.36, r);
