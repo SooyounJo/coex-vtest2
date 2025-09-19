@@ -33,61 +33,38 @@ export default function ShaderBubble3() {
         return mix(mix(a,b,u.x), mix(c,d,u.x), u.y);
       }
       
-      // 유기체 같은 외곽 변형
-      vec3 organicDeform(vec3 pos, float time) {
-        // 외곽에서 더 강한 변형
-        float distanceFromCenter = length(pos);
-        float outerFactor = smoothstep(0.6, 1.0, distanceFromCenter);
+      // 유기적인 물결 효과
+      float organicWave(vec3 pos, float time) {
+        float wave1 = sin(pos.x * 2.0 + time * 0.4) * cos(pos.z * 1.8 + time * 0.3);
+        float wave2 = sin(pos.x * 3.5 + time * 0.6) * cos(pos.z * 2.8 + time * 0.5);
+        float wave3 = sin(pos.x * 5.0 + time * 0.8) * cos(pos.z * 3.5 + time * 0.7);
         
-        // 유기체 같은 불규칙한 변형
-        float organic1 = noise(pos.xy * 2.0 + time * 0.3) * 0.15 * outerFactor;
-        float organic2 = noise(pos.yz * 3.0 + time * 0.5) * 0.08 * outerFactor;
-        float organic3 = noise(pos.zx * 4.0 + time * 0.7) * 0.04 * outerFactor;
+        float noiseWave1 = noise(pos.xy * 1.5 + time * 0.2) * 0.6;
+        float noiseWave2 = noise(pos.yz * 2.0 + time * 0.4) * 0.4;
+        float noiseWave3 = noise(pos.zx * 2.5 + time * 0.6) * 0.3;
         
-        // 전체적인 외곽 변형
-        float totalDeform = organic1 + organic2 + organic3;
+        float waveX = (wave1 + wave2 * 0.6 + wave3 * 0.4) * 0.1;
+        float waveY = noiseWave1 + noiseWave2 * 0.5 + noiseWave3 * 0.3;
+        float waveZ = sin(pos.y * 2.5 + time * 0.5) * cos(pos.x * 2.0 + time * 0.4) * 0.08;
         
-        return pos * (1.0 + totalDeform);
-      }
-      
-      // 맥동하는 외곽 효과
-      vec3 pulsingOuter(vec3 pos, float time) {
-        float distanceFromCenter = length(pos);
-        float outerFactor = smoothstep(0.5, 1.0, distanceFromCenter);
-        
-        // 맥동하는 효과
-        float pulse1 = sin(time * 1.2 + distanceFromCenter * 4.0) * 0.08 * outerFactor;
-        float pulse2 = sin(time * 2.0 + distanceFromCenter * 6.0) * 0.04 * outerFactor;
-        float pulse3 = noise(pos.xy * 2.5 + time * 0.4) * 0.06 * outerFactor;
-        
-        float totalPulse = pulse1 + pulse2 + pulse3;
-        
-        return pos * (1.0 + totalPulse);
+        return waveX + waveY * 0.1 + waveZ;
       }
       
       void main() {
         vUv = uv;
-        
-        // 원래 위치
         vec3 pos = position;
         
-        // 유기체 같은 외곽 변형 적용
-        pos = organicDeform(pos, time);
+        // 유기적인 물결 효과 적용
+        float waveDistortion = organicWave(pos, time);
+        pos += normal * waveDistortion;
         
-        // 맥동하는 외곽 효과 적용
-        pos = pulsingOuter(pos, time);
-        
-        // 노말 재계산
         vNormal = normalize(normalMatrix * normal);
-        
-        // 변형된 위치로 월드 포지션 계산
         vec4 worldPos = modelMatrix * vec4(pos, 1.0);
         vWorldPos = worldPos.xyz;
-        
         gl_Position = projectionMatrix * viewMatrix * worldPos;
       }
     `,
-      fragmentShader: `
+    fragmentShader: `
       precision highp float;
       uniform float time;
       uniform vec3 lightDir;
@@ -100,6 +77,7 @@ export default function ShaderBubble3() {
         p += dot(p, p+34.345);
         return fract(p.x*p.y);
       }
+      
       float n2(vec2 p){
         vec2 i = floor(p);
         vec2 f = fract(p);
@@ -111,12 +89,10 @@ export default function ShaderBubble3() {
         return mix(mix(a,b,u.x), mix(c,d,u.x), u.y);
       }
 
-      // 일렁이는 빛을 위한 노이즈 함수
       float noise(vec2 p) {
         return sin(p.x) * cos(p.y) + sin(p.x * 2.0) * cos(p.y * 2.0) * 0.5;
       }
 
-      // 일레스틱 효과를 위한 웨이브 함수
       float elasticWave(float x, float frequency, float amplitude) {
         float wave = sin(x * frequency) * amplitude;
         float decay = exp(-x * 0.05);
@@ -142,19 +118,18 @@ export default function ShaderBubble3() {
       }
 
       void main() {
-        vec3 normal = normalize(vNormal);
-        vec3 viewDir = normalize(cameraPosition - vWorldPos);
-        
-        float fresnel = 1.0 - max(0.0, dot(normal, viewDir));
-        float rim = pow(fresnel, 2.0);
-        
-        float topness = dot(normal, ringDir);
-        topness = 0.5 + 0.5*topness;
-        
-        vec3 peach = vec3(1.0, 0.8, 0.6);
-        vec3 pink = vec3(1.0, 0.6, 0.8);
-        vec3 purple = vec3(0.8, 0.6, 1.0);
-        
+        vec3 N = normalize(vNormal);
+        vec3 L = normalize(lightDir);
+        float lambert = max(dot(N, L), 0.0);
+
+        vec2 p = vUv - 0.5;
+        float r = length(p);
+
+        float topness = clamp(dot(N, normalize(ringDir)) * 0.5 + 0.5, 0.0, 1.0);
+
+        vec3 peach = vec3(1.00, 0.90, 0.72);
+        vec3 pink  = vec3(1.00, 0.70, 0.90);
+        vec3 purple= vec3(0.82, 0.68, 1.00);
         vec3 base = mix(pink, peach, clamp(0.5 + 0.5*topness, 0.0, 1.0));
         base = mix(base, purple, smoothstep(0.0, 0.35, 1.0 - topness));
 
@@ -219,9 +194,9 @@ export default function ShaderBubble3() {
         lit += rippleColor + elasticColor;
 
         vec3 V = vec3(0.0, 0.0, 1.0);
-        float fres = pow(1.0 - max(dot(normal, V), 0.0), 2.6);
+        float fres = pow(1.0 - max(dot(N, V), 0.0), 2.6);
         vec3 rimGlow = vec3(0.9, 0.4, 0.7) * fres * 0.36;
-        float softHalo = smoothstep(0.34, 0.10, length(vUv - 0.5)) * 0.13;
+        float softHalo = smoothstep(0.34, 0.10, r) * 0.13;
         vec3 glow = rimGlow + vec3(0.8, 0.5, 0.7) * softHalo;
         lit += glow;
 
@@ -234,15 +209,14 @@ export default function ShaderBubble3() {
         lit = mix(lit, vec3(1.0), 0.05);
         lit = clamp(lit, 0.0, 1.1);
 
-        float edgeFeather = smoothstep(0.52, 0.36, length(vUv - 0.5));
+        float edgeFeather = smoothstep(0.52, 0.36, r);
         float alpha = 0.80 * edgeFeather + fres*0.10;
         alpha = clamp(alpha, 0.0, 0.96);
 
         gl_FragColor = vec4(lit, alpha);
       }
     `,
-    transparent: false,
-    side: THREE.DoubleSide,
+    transparent: true,
   }), [])
 
   useFrame((state, delta) => {
@@ -269,9 +243,8 @@ export default function ShaderBubble3() {
       <mesh position={[0, yBottom, -0.5]}>
         <sphereGeometry args={[radius * 1.2, 128, 128]} />
         <meshBasicMaterial 
-          color="#4ecdc4" 
           transparent 
-          opacity={0.3}
+          opacity={0.0}
           side={THREE.DoubleSide}
         />
       </mesh>
