@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Head from 'next/head'
 import { Canvas } from '@react-three/fiber'
 import ShaderBubble from '../components/ShaderBubble'
+import ShaderBubble2 from '../components/ShaderBubble2'
 
 export default function Home() {
   const [selectedStyle, setSelectedStyle] = useState(1)
@@ -25,7 +26,7 @@ export default function Home() {
             <color attach="background" args={["#f3f4f6"]} />
             <ambientLight intensity={0.3} />
             <directionalLight position={[2, 3, 2]} intensity={0.5} />
-            <ShaderBubble styleType={selectedStyle} />
+            {selectedStyle === 2 ? <ShaderBubble2 /> : <ShaderBubble styleType={selectedStyle} />}
           </Canvas>
         </div>
 
@@ -69,14 +70,15 @@ export default function Home() {
           bottom: 30px;
           left: 50%;
           transform: translateX(-50%);
-          background: rgba(255, 255, 255, 0.15);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.2);
+          background: rgba(255, 255, 255, 0.25);
+          backdrop-filter: blur(30px);
+          border: 1px solid rgba(255, 255, 255, 0.4);
           border-radius: 25px;
           padding: 20px 30px;
           box-shadow: 
-            0 8px 32px rgba(0, 0, 0, 0.1),
-            inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            0 12px 40px rgba(0, 0, 0, 0.15),
+            inset 0 1px 0 rgba(255, 255, 255, 0.6),
+            0 0 20px rgba(255, 255, 255, 0.1);
           z-index: 10;
         }
 
@@ -91,10 +93,10 @@ export default function Home() {
           height: 50px;
           border: none;
           border-radius: 50%;
-          background: rgba(255, 255, 255, 0.2);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          color: rgba(255, 255, 255, 0.9);
+          background: rgba(255, 255, 255, 0.3);
+          backdrop-filter: blur(15px);
+          border: 1px solid rgba(255, 255, 255, 0.5);
+          color: rgba(255, 255, 255, 0.95);
           font-size: 1.2rem;
           font-weight: 600;
           cursor: pointer;
@@ -103,28 +105,31 @@ export default function Home() {
           align-items: center;
           justify-content: center;
           box-shadow: 
-            0 4px 15px rgba(0, 0, 0, 0.1),
-            inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            0 6px 20px rgba(0, 0, 0, 0.15),
+            inset 0 1px 0 rgba(255, 255, 255, 0.4),
+            0 0 15px rgba(255, 255, 255, 0.1);
         }
 
         .style-button:hover {
-          background: rgba(255, 255, 255, 0.3);
+          background: rgba(255, 255, 255, 0.4);
           transform: translateY(-3px) scale(1.05);
           box-shadow: 
-            0 8px 25px rgba(0, 0, 0, 0.15),
-            inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            0 10px 30px rgba(0, 0, 0, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.6),
+            0 0 25px rgba(255, 255, 255, 0.2);
         }
 
         .style-button.active {
           background: linear-gradient(135deg, 
-            rgba(78, 205, 196, 0.8), 
-            rgba(68, 160, 141, 0.8));
+            rgba(255, 20, 147, 0.9), 
+            rgba(219, 112, 147, 0.9));
           color: white;
           transform: translateY(-3px) scale(1.1);
           box-shadow: 
-            0 12px 30px rgba(78, 205, 196, 0.4),
-            inset 0 1px 0 rgba(255, 255, 255, 0.3);
-          border: 1px solid rgba(78, 205, 196, 0.5);
+            0 15px 40px rgba(255, 20, 147, 0.5),
+            inset 0 1px 0 rgba(255, 255, 255, 0.5),
+            0 0 30px rgba(255, 20, 147, 0.3);
+          border: 1px solid rgba(255, 20, 147, 0.6);
         }
 
         @media (max-width: 768px) {

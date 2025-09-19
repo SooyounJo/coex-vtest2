@@ -65,12 +65,12 @@ export default function ShaderBubble({ styleType = 1 }) {
         float d1 = abs(f - center);
         float d2 = abs(f - (center + 1.0));
         float d  = min(d0, min(d1, d2));
-        float aa = fwidth(f) * 1.5;
+        float aa = fwidth(f) * 1.2; // 부드러운 변화
         return smoothstep(width + aa, 0.0 + aa, d);
       }
 
       vec3 bandWeights(float f) {
-        float width = 0.28;
+        float width = 0.25; // 부드러운 색상 변화
         float y = bumpMove(0.18, width, f);
         float p = bumpMove(0.52, width, f);
         float u = bumpMove(0.86, width, f);
@@ -109,8 +109,8 @@ export default function ShaderBubble({ styleType = 1 }) {
         float elastic1 = elasticWave(topness * 2.0 + time * 0.4, 3.0, 0.15);
         float elastic2 = elasticWave(topness * 3.0 + time * 0.6, 2.0, 0.08);
         float totalElastic = elastic1 + elastic2;
-        // 블러 효과 (스타일별로 조정)
-        float blurAmount = styleType < 2.5 ? 0.02 : 0.07; // 버튼 2일 때 블러 약하게
+        // 블러 효과 (강화)
+        float blurAmount = 0.08;
         float f1 = topness * scale + phase + totalRipple + totalElastic;
         float f2 = topness * scale + phase + blurAmount + totalRipple * 0.8 + totalElastic * 0.6;
         float f3 = topness * scale + phase + (blurAmount * 1.5) + totalRipple * 0.6 + totalElastic * 0.4;
@@ -125,34 +125,10 @@ export default function ShaderBubble({ styleType = 1 }) {
         float wobble3 = 0.997 + 0.003*n2(vUv*2.2 + time*0.06 + 3.1);
         w1 *= wobble1; w2 *= wobble2; w3 *= wobble3;
 
-        // 스타일별 색상 팔레트
-        vec3 cY, cP, cU;
-        if (styleType < 1.5) {
-          // 스타일 1: 기본 3D 구 (원래 피치/핑크/라벤더)
-          cY = vec3(1.00, 0.84, 0.70);
-          cP = vec3(1.00, 0.62, 0.92);
-          cU = vec3(0.82, 0.70, 1.00);
-        } else if (styleType < 2.5) {
-          // 스타일 2: 블러가 약한 구 (오션 블루)
-          cY = vec3(0.40, 0.80, 1.00);
-          cP = vec3(0.20, 0.60, 0.90);
-          cU = vec3(0.10, 0.40, 0.80);
-        } else if (styleType < 3.5) {
-          // 스타일 3: 포레스트 그린
-          cY = vec3(0.60, 1.00, 0.40);
-          cP = vec3(0.30, 0.80, 0.20);
-          cU = vec3(0.20, 0.60, 0.10);
-        } else if (styleType < 4.5) {
-          // 스타일 4: 선셋 오렌지
-          cY = vec3(1.00, 0.60, 0.20);
-          cP = vec3(1.00, 0.40, 0.00);
-          cU = vec3(0.80, 0.20, 0.00);
-        } else {
-          // 스타일 5: 로얄 퍼플
-          cY = vec3(0.80, 0.40, 1.00);
-          cP = vec3(0.60, 0.20, 0.80);
-          cU = vec3(0.40, 0.00, 0.60);
-        }
+        // 핑크 중심 색상 팔레트
+        vec3 cY = vec3(1.00, 0.75, 0.85);  // 핑크-피치
+        vec3 cP = vec3(1.00, 0.50, 0.80);  // 핫핑크
+        vec3 cU = vec3(0.90, 0.40, 0.70);  // 딥핑크
 
         w1 *= vec3(0.18, 1.0, 0.95);
         w2 *= vec3(0.18, 1.0, 0.95);
@@ -169,7 +145,8 @@ export default function ShaderBubble({ styleType = 1 }) {
         float flowMaskAvg = clamp((0.5*mask1 + 0.35*mask2 + 0.15*mask3), 0.0, 1.0);
 
         vec3 lit = base;
-        lit = mix(lit, flowColor, flowMaskAvg * 0.95);
+        // 부드러운 색상 혼합으로 대비 줄이기
+        lit = mix(lit, flowColor, flowMaskAvg * 0.8);
         
         // 일렁이는 빛 효과 적용
         vec3 rippleColor = vec3(1.0, 0.9, 0.8) * totalRipple * 0.3;
@@ -186,9 +163,9 @@ export default function ShaderBubble({ styleType = 1 }) {
         lit += vec3(0.72, 0.57, 1.02) * (1.0 - topness) * 0.14;
 
         vec3 gray = vec3(dot(lit, vec3(0.299, 0.587, 0.114)));
-        lit = mix(gray, lit, 2.00);
-        lit = pow(lit, vec3(0.86));
-        lit *= 1.12;
+        lit = mix(gray, lit, 1.6); // 채도 줄이기 (2.00 → 1.6)
+        lit = pow(lit, vec3(0.9)); // 감마 조정 (0.86 → 0.9)
+        lit *= 1.05; // 노출 줄이기 (1.12 → 1.05)
         lit = mix(lit, vec3(1.0), 0.05);
         lit = clamp(lit, 0.0, 1.1);
 
