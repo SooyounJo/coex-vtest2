@@ -63,12 +63,12 @@ export default function ShaderBubble4() {
         float d1 = abs(f - center);
         float d2 = abs(f - (center + 1.0));
         float d  = min(d0, min(d1, d2));
-        float aa = fwidth(f) * 1.5;
+        float aa = fwidth(f) * 1.2; // 부드러운 변화
         return smoothstep(width + aa, 0.0 + aa, d);
       }
 
       vec3 bandWeights(float f) {
-        float width = 0.28;
+        float width = 0.25; // 부드러운 색상 변화
         float y = bumpMove(0.18, width, f);
         float p = bumpMove(0.52, width, f);
         float u = bumpMove(0.86, width, f);
@@ -107,9 +107,8 @@ export default function ShaderBubble4() {
         float elastic1 = elasticWave(topness * 2.0 + time * 0.4, 3.0, 0.15);
         float elastic2 = elasticWave(topness * 3.0 + time * 0.6, 2.0, 0.08);
         float totalElastic = elastic1 + elastic2;
-        
-        // 블러 효과 (스타일 4: 선셋 오렌지)
-        float blurAmount = 0.07;
+        // 블러 효과 (약화)
+        float blurAmount = 0.02;
         float f1 = topness * scale + phase + totalRipple + totalElastic;
         float f2 = topness * scale + phase + blurAmount + totalRipple * 0.8 + totalElastic * 0.6;
         float f3 = topness * scale + phase + (blurAmount * 1.5) + totalRipple * 0.6 + totalElastic * 0.4;
@@ -124,10 +123,10 @@ export default function ShaderBubble4() {
         float wobble3 = 0.997 + 0.003*n2(vUv*2.2 + time*0.06 + 3.1);
         w1 *= wobble1; w2 *= wobble2; w3 *= wobble3;
 
-        // 스타일 4: 선셋 오렌지 색상 팔레트
-        vec3 cY = vec3(1.00, 0.60, 0.20);  // 선셋 오렌지
-        vec3 cP = vec3(1.00, 0.40, 0.00);  // 딥 오렌지
-        vec3 cU = vec3(0.80, 0.20, 0.00);  // 다크 오렌지
+        // 4번 구: 오션 블루 색상 팔레트
+        vec3 cY = vec3(0.40, 0.80, 1.00);  // 오션 블루
+        vec3 cP = vec3(0.20, 0.60, 0.90);  // 딥 블루
+        vec3 cU = vec3(0.10, 0.40, 0.80);  // 다크 블루
 
         w1 *= vec3(0.18, 1.0, 0.95);
         w2 *= vec3(0.18, 1.0, 0.95);
@@ -146,19 +145,19 @@ export default function ShaderBubble4() {
         vec3 lit = base;
         lit = mix(lit, flowColor, flowMaskAvg * 0.95);
         
-        // 일렁이는 빛 효과 적용 (선셋 오렌지)
-        vec3 rippleColor = vec3(1.0, 0.7, 0.3) * totalRipple * 0.3;
-        vec3 elasticColor = vec3(1.0, 0.5, 0.2) * totalElastic * 0.2;
+        // 일렁이는 빛 효과 적용 (오션 블루)
+        vec3 rippleColor = vec3(0.4, 0.8, 1.0) * totalRipple * 0.3;
+        vec3 elasticColor = vec3(0.2, 0.6, 0.9) * totalElastic * 0.2;
         lit += rippleColor + elasticColor;
 
         vec3 V = vec3(0.0, 0.0, 1.0);
         float fres = pow(1.0 - max(dot(N, V), 0.0), 2.6);
-        vec3 rimGlow = vec3(1.0, 0.5, 0.2) * fres * 0.36;
+        vec3 rimGlow = vec3(0.2, 0.6, 0.9) * fres * 0.36;
         float softHalo = smoothstep(0.34, 0.10, r) * 0.13;
-        vec3 glow = rimGlow + vec3(1.0, 0.6, 0.3) * softHalo;
+        vec3 glow = rimGlow + vec3(0.4, 0.8, 1.0) * softHalo;
         lit += glow;
 
-        lit += vec3(0.8, 0.3, 0.1) * (1.0 - topness) * 0.14;
+        lit += vec3(0.1, 0.4, 0.8) * (1.0 - topness) * 0.14;
 
         vec3 gray = vec3(dot(lit, vec3(0.299, 0.587, 0.114)));
         lit = mix(gray, lit, 2.00);
@@ -196,6 +195,8 @@ export default function ShaderBubble4() {
         <sphereGeometry args={[radius, 256, 256]} />
         <primitive object={material} attach="material" />
       </mesh>
+      
+      {/* 배경 구 (4번 구는 배경 구 없음) */}
     </>
   )
 }

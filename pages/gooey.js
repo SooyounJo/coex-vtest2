@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react'
 import Head from 'next/head'
-import { Canvas } from '@react-three/fiber'
 import GooeyShader from '../components/GooeyShader'
 
 export default function GooeyPage() {
@@ -17,21 +16,8 @@ export default function GooeyPage() {
           <h1 className="style-title">Gooey Effect</h1>
         </div>
         
-        <Canvas
-          className="gooey-canvas"
-          dpr={[2, 3]}
-          gl={{ 
-            antialias: true, 
-            powerPreference: 'high-performance',
-            precision: 'highp',
-            alpha: true,
-            stencil: false,
-            depth: false
-          }}
-          camera={{ position: [0, 0, 1], fov: 50 }}
-        >
-          <GooeyShader />
-        </Canvas>
+        {/* Gooey Effect (Canvas 밖) */}
+        <GooeyShader />
 
         <div className="back-button">
           <button onClick={() => window.history.back()}>← 뒤로가기</button>
@@ -45,7 +31,7 @@ export default function GooeyPage() {
           left: 0;
           width: 100vw;
           height: 100vh;
-          background: #f3f4f6;
+          background: #ffffff;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -61,13 +47,13 @@ export default function GooeyPage() {
         }
 
         .style-title {
-          color: #ffb6c1;
+          color: #ff62e8;
           font-family: 'Noto Sans KR', sans-serif;
           font-size: 1.8rem;
           font-weight: 700;
           margin: 0;
           text-align: center;
-          text-shadow: 0 2px 4px rgba(255, 182, 193, 0.3);
+          text-shadow: 0 2px 4px rgba(255, 98, 232, 0.3);
           letter-spacing: 0.1em;
         }
 
@@ -89,7 +75,7 @@ export default function GooeyPage() {
         }
 
         .back-button button {
-          background: rgba(255, 182, 193, 0.9);
+          background: rgba(255, 98, 232, 0.9);
           border: none;
           padding: 10px 20px;
           border-radius: 25px;
@@ -98,13 +84,13 @@ export default function GooeyPage() {
           font-weight: 600;
           cursor: pointer;
           transition: all 0.3s ease;
-          box-shadow: 0 2px 10px rgba(255, 182, 193, 0.3);
+          box-shadow: 0 2px 10px rgba(255, 98, 232, 0.3);
         }
 
         .back-button button:hover {
-          background: rgba(255, 182, 193, 1);
+          background: rgba(255, 98, 232, 1);
           transform: translateY(-2px);
-          box-shadow: 0 4px 15px rgba(255, 182, 193, 0.4);
+          box-shadow: 0 4px 15px rgba(255, 98, 232, 0.4);
         }
 
         @media (max-width: 768px) {

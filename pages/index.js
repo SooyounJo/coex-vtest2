@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import Head from 'next/head'
 import { Canvas } from '@react-three/fiber'
-import ShaderBubble from '../components/ShaderBubble'
+import ShaderBubble1 from '../components/ShaderBubble1'
 import ShaderBubble2 from '../components/ShaderBubble2'
 import ShaderBubble3 from '../components/ShaderBubble3'
 import ShaderBubble4 from '../components/ShaderBubble4'
@@ -39,15 +39,15 @@ export default function Home() {
             gl={{ antialias: true, powerPreference: 'high-performance' }}
             camera={{ position: [0, 0, 6], fov: 50 }}
           >
-            <color attach="background" args={["#f3f4f6"]} />
+            <color attach="background" args={["#ffffff"]} />
             <ambientLight intensity={0.3} />
             <directionalLight position={[2, 3, 2]} intensity={0.5} />
-            {selectedStyle === 1 ? <ShaderBubble styleType={selectedStyle} /> : 
+            {selectedStyle === 1 ? <ShaderBubble1 /> : 
              selectedStyle === 2 ? <ShaderBubble2 /> : 
-             selectedStyle === 3 ? <ShaderBubble4 /> : 
-             selectedStyle === 4 ? <ShaderBubble3 /> : 
+             selectedStyle === 3 ? <ShaderBubble3 /> : 
+             selectedStyle === 4 ? <ShaderBubble4 /> : 
              selectedStyle === 5 ? <ShaderBubble5 /> : 
-             <ShaderBubble styleType={selectedStyle} />}
+             <ShaderBubble1 />}
           </Canvas>
           
         {/* 6번 버튼은 별도 페이지로 이동 */}
@@ -70,12 +70,12 @@ export default function Home() {
           )}
           {selectedStyle === 4 && (
             <div className="title-overlay">
-              <h1 className="style-title">Organic Shape</h1>
+              <h1 className="style-title">Big Wave</h1>
             </div>
           )}
           {selectedStyle === 5 && (
             <div className="title-overlay">
-              <h1 className="style-title">Big Wave</h1>
+              <h1 className="style-title">Organic Shape</h1>
             </div>
           )}
         </div>

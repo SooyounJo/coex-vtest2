@@ -128,7 +128,7 @@ export default function ShaderBubble({ styleType = 1 }) {
         // 스타일별 색상 팔레트
         vec3 cY, cP, cU;
         if (styleType < 1.5) {
-          // 스타일 1: 기본 3D 구 (원래 피치/핑크/라벤더)
+          // 스타일 1: 기본 3D 구 (블룸 강화된 연분홍)
           cY = vec3(1.00, 0.84, 0.70);
           cP = vec3(1.00, 0.62, 0.92);
           cU = vec3(0.82, 0.70, 1.00);
@@ -178,10 +178,40 @@ export default function ShaderBubble({ styleType = 1 }) {
 
         vec3 V = vec3(0.0, 0.0, 1.0);
         float fres = pow(1.0 - max(dot(N, V), 0.0), 2.6);
-        vec3 rimGlow = vec3(0.82, 0.66, 1.10) * fres * 0.36;
-        float softHalo = smoothstep(0.34, 0.10, r) * 0.13;
-        vec3 glow = rimGlow + vec3(1.0, 0.92, 0.98) * softHalo;
-        lit += glow;
+        
+        // 1번 구 홀로그램 효과
+        if (styleType < 1.5) {
+           // 홀로그램 무지개 효과 (더 진한 컬러)
+           float hologramAngle = atan(vUv.y - 0.5, vUv.x - 0.5) + time * 0.5;
+           float hologramFreq = 3.0;
+           vec3 hologramColor = vec3(
+             0.2 + 0.8 * sin(hologramAngle * hologramFreq + 0.0),
+             0.2 + 0.8 * sin(hologramAngle * hologramFreq + 2.094),
+             0.2 + 0.8 * sin(hologramAngle * hologramFreq + 4.188)
+           );
+          
+          // 홀로그램 스캔라인 효과
+          float scanline = sin(vUv.y * 50.0 + time * 10.0) * 0.1 + 0.9;
+          hologramColor *= scanline;
+          
+           // 홀로그램 글로우 (무지개색) - 더 강하게
+           float hologramGlow = smoothstep(0.3, 0.0, r) * 0.7;
+           lit += hologramColor * hologramGlow;
+           
+           // 홀로그램 림 효과 - 더 강하게
+           float hologramRim = pow(1.0 - max(dot(N, V), 0.0), 1.5);
+           lit += hologramColor * hologramRim * 1.0;
+          
+          // 홀로그램 반투명 효과
+          float hologramAlpha = 0.3 + 0.4 * sin(time * 2.0 + r * 10.0);
+          lit *= (1.0 + hologramAlpha * 0.5);
+        } else {
+          // 다른 스타일은 기존 글로우
+          vec3 rimGlow = vec3(0.82, 0.66, 1.10) * fres * 0.36;
+          float softHalo = smoothstep(0.34, 0.10, r) * 0.13;
+          vec3 glow = rimGlow + vec3(1.0, 0.92, 0.98) * softHalo;
+          lit += glow;
+        }
 
         lit += vec3(0.72, 0.57, 1.02) * (1.0 - topness) * 0.14;
 
@@ -194,7 +224,16 @@ export default function ShaderBubble({ styleType = 1 }) {
 
         float edgeFeather = smoothstep(0.52, 0.36, r);
         float alpha = 0.80 * edgeFeather + fres*0.10;
-        alpha = clamp(alpha, 0.0, 0.96);
+        
+        // 1번 구 홀로그램 알파 효과
+        if (styleType < 1.5) {
+          // 홀로그램 반투명 효과
+          float hologramFlicker = 0.7 + 0.3 * sin(time * 3.0 + r * 15.0);
+          alpha *= hologramFlicker;
+          alpha = clamp(alpha, 0.3, 0.9);
+        } else {
+          alpha = clamp(alpha, 0.0, 0.96);
+        }
 
         gl_FragColor = vec4(lit, alpha);
       }

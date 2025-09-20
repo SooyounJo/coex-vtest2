@@ -109,8 +109,8 @@ export default function ShaderBubble({ styleType = 1 }) {
         float elastic1 = elasticWave(topness * 2.0 + time * 0.4, 3.0, 0.15);
         float elastic2 = elasticWave(topness * 3.0 + time * 0.6, 2.0, 0.08);
         float totalElastic = elastic1 + elastic2;
-        // 블러 효과 (강화)
-        float blurAmount = 0.08;
+        // 블러 효과 (약화)
+        float blurAmount = 0.02;
         float f1 = topness * scale + phase + totalRipple + totalElastic;
         float f2 = topness * scale + phase + blurAmount + totalRipple * 0.8 + totalElastic * 0.6;
         float f3 = topness * scale + phase + (blurAmount * 1.5) + totalRipple * 0.6 + totalElastic * 0.4;
