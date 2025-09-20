@@ -261,10 +261,10 @@ export default function ShaderBubble5() {
   const { camera, viewport } = useThree()
   const v = viewport.getCurrentViewport(camera, [0, 0, 0])
 
-  const radius = Math.min(v.width, v.height) * (window.innerWidth <= 768 ? 0.45 : 0.33)
+  const radius = Math.min(v.width, v.height) * (window.innerWidth <= 768 ? 0.55 : 0.33) // 모바일: 55%로 증가
   const margin = v.height * 0.035
   const yBottom = window.innerWidth <= 768 ? 
-    -v.height / 2 + radius + margin + v.height * 0.1 : // 모바일: 중앙보다 10% 아래
+    -v.height / 2 + radius + margin + v.height * 0.05 : // 모바일: 중앙보다 5% 아래 (더 위로)
     -v.height / 2 + radius + margin // 데스크톱: 기존 위치
 
   return (
