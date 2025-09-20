@@ -3,6 +3,9 @@ import { useEffect, useRef, useState } from 'react'
 export default function GooeyShader() {
   const containerRef = useRef(null)
   const [isAbsorbed, setIsAbsorbed] = useState(false)
+  const [isAutoMode, setIsAutoMode] = useState(true)
+  const autoModeRef = useRef(true)
+  const lastClickTime = useRef(0)
 
   useEffect(() => {
     const parent = containerRef.current
@@ -26,7 +29,7 @@ export default function GooeyShader() {
       const circleSize = window.innerWidth <= 768 ? 
         Math.random() * 50 + 15 : 
         Math.random() * 80 + 20
-      const time = Math.random() * 10 + 3
+      const time = Math.random() * 15 + 8 // 더 느린 애니메이션
       
       newDIV.style.position = 'absolute'
       newDIV.style.width = `${circleSize}px`
@@ -70,26 +73,73 @@ export default function GooeyShader() {
     console.log('Gooey circles created:', parent.children.length)
   }, [])
 
+  // 자동 모드 애니메이션
+  useEffect(() => {
+    const autoAnimate = () => {
+      if (!autoModeRef.current) return
+      
+      const circles = document.querySelectorAll('.circle')
+      const centerCircle = document.querySelector('.center-circle')
+      
+      if (circles.length === 0) return
+      
+      // 랜덤하게 모이거나 흩어지기
+      const shouldAbsorb = Math.random() > 0.5
+      
+      if (shouldAbsorb) {
+        // 흡수 애니메이션
+        circles.forEach((circle, index) => {
+          const circleClass = circle.classList[1]
+          circle.style.animation = `absorb-${circleClass.split('-')[1]} 2.0s ease-in-out forwards`
+        })
+        
+        centerCircle.style.animation = 'pulse 2.0s ease-in-out'
+        setIsAbsorbed(true)
+      } else {
+        // 확산 애니메이션
+        circles.forEach((circle, index) => {
+          const circleClass = circle.classList[1]
+          circle.style.animation = `expand-${circleClass.split('-')[1]} 2.0s ease-in-out forwards`
+        })
+        
+        centerCircle.style.animation = 'none'
+        setIsAbsorbed(false)
+      }
+    }
+
+    // 3-6초마다 자동 애니메이션
+    const interval = setInterval(autoAnimate, Math.random() * 3000 + 3000)
+    
+    return () => clearInterval(interval)
+  }, [])
+
   const handleTouch = () => {
+    const currentTime = Date.now()
+    lastClickTime.current = currentTime
+    
+    // 클릭 시 자동 모드 일시 중지
+    autoModeRef.current = false
+    setIsAutoMode(false)
+    
     const circles = document.querySelectorAll('.circle')
     const centerCircle = document.querySelector('.center-circle')
     
     if (!isAbsorbed) {
-      // 흡수 애니메이션
+      // 흡수 애니메이션 (더 느리게)
       circles.forEach((circle, index) => {
         const circleClass = circle.classList[1] // groom-1, groom-2 등
-        circle.style.animation = `absorb-${circleClass.split('-')[1]} 0.8s ease-in-out forwards`
+        circle.style.animation = `absorb-${circleClass.split('-')[1]} 1.5s ease-in-out forwards`
       })
       
       // 중앙 원 확대
-      centerCircle.style.animation = 'pulse 0.8s ease-in-out'
+      centerCircle.style.animation = 'pulse 1.5s ease-in-out'
       
       setIsAbsorbed(true)
     } else {
-      // 확산 애니메이션
+      // 확산 애니메이션 (더 느리게)
       circles.forEach((circle, index) => {
         const circleClass = circle.classList[1]
-        circle.style.animation = `expand-${circleClass.split('-')[1]} 0.8s ease-in-out forwards`
+        circle.style.animation = `expand-${circleClass.split('-')[1]} 1.5s ease-in-out forwards`
       })
       
       // 중앙 원 원래대로
@@ -97,6 +147,12 @@ export default function GooeyShader() {
       
       setIsAbsorbed(false)
     }
+    
+    // 5초 후 자동 모드 재개
+    setTimeout(() => {
+      autoModeRef.current = true
+      setIsAutoMode(true)
+    }, 5000)
   }
 
   return (
@@ -149,7 +205,7 @@ export default function GooeyShader() {
           align-items: center;
           filter: blur(10px) contrast(10);
           position: relative;
-          animation: rotate 12s infinite linear;
+          animation: rotate 20s infinite linear;
         }
 
         .center-circle {

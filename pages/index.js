@@ -6,6 +6,7 @@ import ShaderBubble2 from '../components/2'
 import ShaderBubble3 from '../components/3'
 import ShaderBubble4 from '../components/4'
 import ShaderBubble5 from '../components/5'
+import AgenticBubble from '../components/7'
 import { useRouter } from 'next/router'
 
 export default function Home() {
@@ -46,8 +47,9 @@ export default function Home() {
              selectedStyle === 2 ? <ShaderBubble2 /> : 
              selectedStyle === 3 ? <ShaderBubble4 /> : 
              selectedStyle === 4 ? <ShaderBubble5 /> : 
-             selectedStyle === 5 ? <ShaderBubble3 /> : 
-             <ShaderBubble styleType={selectedStyle} />}
+            selectedStyle === 5 ? <ShaderBubble3 /> : 
+            selectedStyle === 7 ? <AgenticBubble styleType={7} /> :
+            <ShaderBubble styleType={selectedStyle} />}
           </Canvas>
           
         {/* 6번 버튼은 별도 페이지로 이동 */}
@@ -78,12 +80,17 @@ export default function Home() {
               <h1 className="style-title">Organic Shape</h1>
             </div>
           )}
+          {selectedStyle === 7 && (
+            <div className="title-overlay">
+              <h1 className="style-title">Agentic Drop</h1>
+            </div>
+          )}
         </div>
 
         {/* 버튼 컨트롤 */}
         <div className="controls">
           <div className="button-grid">
-            {[1, 2, 3, 4, 5, 6].map((num) => (
+            {[1, 2, 3, 4, 5, 6, 7].map((num) => (
               <button
                 key={num}
                 className={`style-button ${selectedStyle === num ? 'active' : ''}`}
@@ -208,46 +215,6 @@ export default function Home() {
           }
 
           .canvas-container {
-            height: calc(100vh - 120px);
-            margin-bottom: 120px;
-          }
-
-          .controls {
-            bottom: 10px;
-            padding: 10px 15px;
-            position: fixed;
-            width: calc(100% - 30px);
-            left: 15px;
-            right: 15px;
-          }
-          
-          .button-grid {
-            gap: 8px;
-            justify-content: center;
-            flex-wrap: wrap;
-          }
-          
-          .style-button {
-            width: 35px;
-            height: 35px;
-            font-size: 0.9rem;
-            min-width: 35px;
-          }
-
-          .title-overlay {
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-          }
-
-          .style-title {
-            font-size: 1.2rem;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .canvas-container {
             height: calc(100vh - 100px);
             margin-bottom: 100px;
           }
@@ -255,24 +222,72 @@ export default function Home() {
           .controls {
             bottom: 5px;
             padding: 8px 10px;
+            position: fixed;
             width: calc(100% - 20px);
             left: 10px;
             right: 10px;
           }
           
           .button-grid {
-            gap: 6px;
+            gap: 4px;
+            justify-content: space-between;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding: 0 5px;
           }
           
           .style-button {
-            width: 30px;
-            height: 30px;
+            width: 28px;
+            height: 28px;
             font-size: 0.8rem;
-            min-width: 30px;
+            min-width: 28px;
+            flex-shrink: 0;
+          }
+
+          .title-overlay {
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
           }
 
           .style-title {
-            font-size: 1rem;
+            font-size: 1.1rem;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .canvas-container {
+            height: calc(100vh - 90px);
+            margin-bottom: 90px;
+          }
+
+          .controls {
+            bottom: 3px;
+            padding: 6px 8px;
+            width: calc(100% - 16px);
+            left: 8px;
+            right: 8px;
+          }
+          
+          .button-grid {
+            gap: 3px;
+            justify-content: space-between;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding: 0 3px;
+          }
+          
+          .style-button {
+            width: 26px;
+            height: 26px;
+            font-size: 0.75rem;
+            min-width: 26px;
+            flex-shrink: 0;
+          }
+
+          .style-title {
+            font-size: 0.9rem;
           }
         }
       `}</style>
