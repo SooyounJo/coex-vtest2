@@ -2,12 +2,13 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 
-export default function ShaderBubble3() {
+export default function ShaderBubble({ styleType = 1 }) {
   const material = useMemo(() => new THREE.ShaderMaterial({
     uniforms: {
       time: { value: 0 },
       lightDir: { value: new THREE.Vector3(0.2, 0.9, 0.3).normalize() },
       ringDir: { value: new THREE.Vector3(0.08, 0.56, 0.86).normalize() },
+      styleType: { value: styleType },
     },
     vertexShader: `
       varying vec2 vUv;
@@ -21,11 +22,12 @@ export default function ShaderBubble3() {
         gl_Position = projectionMatrix * viewMatrix * worldPos;
       }
     `,
-    fragmentShader: `
+      fragmentShader: `
       precision highp float;
       uniform float time;
       uniform vec3 lightDir;
       uniform vec3 ringDir;
+      uniform float styleType;
       varying vec2 vUv;
       varying vec3 vNormal;
 
@@ -97,19 +99,18 @@ export default function ShaderBubble3() {
         float loopT   = mod(time, loopSec) / loopSec;
         float phase = -loopT;
         
-        // 일렁이는 빛 효과 (2번 구와 같은 방식)
+        // 일렁이는 빛 효과
         float ripple1 = noise(vUv * 3.0 + time * 0.5) * 0.1;
         float ripple2 = noise(vUv * 5.0 + time * 0.3) * 0.05;
         float ripple3 = noise(vUv * 7.0 + time * 0.7) * 0.03;
         float totalRipple = ripple1 + ripple2 + ripple3;
         
-        // 일레스틱 웨이브 효과 (2번 구와 같은 방식)
+        // 일레스틱 웨이브 효과
         float elastic1 = elasticWave(topness * 2.0 + time * 0.4, 3.0, 0.15);
         float elastic2 = elasticWave(topness * 3.0 + time * 0.6, 2.0, 0.08);
         float totalElastic = elastic1 + elastic2;
-        
-        // 블러 효과 (약화)
-        float blurAmount = 0.02;
+        // 블러 효과 (스타일별로 조정)
+        float blurAmount = styleType < 2.5 ? 0.02 : 0.07; // 버튼 2일 때 블러 약하게
         float f1 = topness * scale + phase + totalRipple + totalElastic;
         float f2 = topness * scale + phase + blurAmount + totalRipple * 0.8 + totalElastic * 0.6;
         float f3 = topness * scale + phase + (blurAmount * 1.5) + totalRipple * 0.6 + totalElastic * 0.4;
@@ -124,10 +125,34 @@ export default function ShaderBubble3() {
         float wobble3 = 0.997 + 0.003*n2(vUv*2.2 + time*0.06 + 3.1);
         w1 *= wobble1; w2 *= wobble2; w3 *= wobble3;
 
-        // 3번 구: 오렌지 색상 팔레트
-        vec3 cY = vec3(1.00, 0.60, 0.20);  // 선셋 오렌지
-        vec3 cP = vec3(1.00, 0.40, 0.00);  // 딥 오렌지
-        vec3 cU = vec3(0.80, 0.20, 0.00);  // 다크 오렌지
+        // 스타일별 색상 팔레트
+        vec3 cY, cP, cU;
+        if (styleType < 1.5) {
+          // 스타일 1: 기본 3D 구 (블룸 강화된 연분홍)
+          cY = vec3(1.00, 0.84, 0.70);
+          cP = vec3(1.00, 0.62, 0.92);
+          cU = vec3(0.82, 0.70, 1.00);
+        } else if (styleType < 2.5) {
+          // 스타일 2: 블러가 약한 구 (연한 오션 블루)
+          cY = vec3(0.60, 0.90, 1.00);
+          cP = vec3(0.40, 0.75, 0.95);
+          cU = vec3(0.30, 0.60, 0.90);
+        } else if (styleType < 3.5) {
+          // 스타일 3: 포레스트 그린
+          cY = vec3(0.60, 1.00, 0.40);
+          cP = vec3(0.30, 0.80, 0.20);
+          cU = vec3(0.20, 0.60, 0.10);
+        } else if (styleType < 4.5) {
+          // 스타일 4: 선셋 오렌지
+          cY = vec3(1.00, 0.60, 0.20);
+          cP = vec3(1.00, 0.40, 0.00);
+          cU = vec3(0.80, 0.20, 0.00);
+        } else {
+          // 스타일 5: 로얄 퍼플
+          cY = vec3(0.80, 0.40, 1.00);
+          cP = vec3(0.60, 0.20, 0.80);
+          cU = vec3(0.40, 0.00, 0.60);
+        }
 
         w1 *= vec3(0.18, 1.0, 0.95);
         w2 *= vec3(0.18, 1.0, 0.95);
@@ -146,19 +171,49 @@ export default function ShaderBubble3() {
         vec3 lit = base;
         lit = mix(lit, flowColor, flowMaskAvg * 0.95);
         
-        // 일렁이는 빛 효과 적용 (오렌지)
-        vec3 rippleColor = vec3(1.0, 0.7, 0.3) * totalRipple * 0.3;
-        vec3 elasticColor = vec3(1.0, 0.5, 0.2) * totalElastic * 0.2;
+        // 일렁이는 빛 효과 적용
+        vec3 rippleColor = vec3(1.0, 0.9, 0.8) * totalRipple * 0.3;
+        vec3 elasticColor = vec3(0.9, 0.7, 1.0) * totalElastic * 0.2;
         lit += rippleColor + elasticColor;
 
         vec3 V = vec3(0.0, 0.0, 1.0);
         float fres = pow(1.0 - max(dot(N, V), 0.0), 2.6);
-        vec3 rimGlow = vec3(1.0, 0.5, 0.2) * fres * 0.36;
-        float softHalo = smoothstep(0.34, 0.10, r) * 0.13;
-        vec3 glow = rimGlow + vec3(1.0, 0.6, 0.3) * softHalo;
-        lit += glow;
+        
+        // 1번 구 홀로그램 효과
+        if (styleType < 1.5) {
+           // 홀로그램 무지개 효과 (더 진한 컬러)
+           float hologramAngle = atan(vUv.y - 0.5, vUv.x - 0.5) + time * 0.5;
+           float hologramFreq = 3.0;
+           vec3 hologramColor = vec3(
+             0.2 + 0.8 * sin(hologramAngle * hologramFreq + 0.0),
+             0.2 + 0.8 * sin(hologramAngle * hologramFreq + 2.094),
+             0.2 + 0.8 * sin(hologramAngle * hologramFreq + 4.188)
+           );
+          
+          // 홀로그램 스캔라인 효과
+          float scanline = sin(vUv.y * 50.0 + time * 10.0) * 0.1 + 0.9;
+          hologramColor *= scanline;
+          
+           // 홀로그램 글로우 (무지개색) - 더 강하게
+           float hologramGlow = smoothstep(0.3, 0.0, r) * 0.7;
+           lit += hologramColor * hologramGlow;
+           
+           // 홀로그램 림 효과 - 더 강하게
+           float hologramRim = pow(1.0 - max(dot(N, V), 0.0), 1.5);
+           lit += hologramColor * hologramRim * 1.0;
+          
+          // 홀로그램 반투명 효과
+          float hologramAlpha = 0.3 + 0.4 * sin(time * 2.0 + r * 10.0);
+          lit *= (1.0 + hologramAlpha * 0.5);
+        } else {
+          // 다른 스타일은 기존 글로우
+          vec3 rimGlow = vec3(0.82, 0.66, 1.10) * fres * 0.36;
+          float softHalo = smoothstep(0.34, 0.10, r) * 0.13;
+          vec3 glow = rimGlow + vec3(1.0, 0.92, 0.98) * softHalo;
+          lit += glow;
+        }
 
-        lit += vec3(0.8, 0.3, 0.1) * (1.0 - topness) * 0.14;
+        lit += vec3(0.72, 0.57, 1.02) * (1.0 - topness) * 0.14;
 
         vec3 gray = vec3(dot(lit, vec3(0.299, 0.587, 0.114)));
         lit = mix(gray, lit, 2.00);
@@ -169,7 +224,16 @@ export default function ShaderBubble3() {
 
         float edgeFeather = smoothstep(0.52, 0.36, r);
         float alpha = 0.80 * edgeFeather + fres*0.10;
-        alpha = clamp(alpha, 0.0, 0.96);
+        
+        // 1번 구 홀로그램 알파 효과
+        if (styleType < 1.5) {
+          // 홀로그램 반투명 효과
+          float hologramFlicker = 0.7 + 0.3 * sin(time * 3.0 + r * 15.0);
+          alpha *= hologramFlicker;
+          alpha = clamp(alpha, 0.3, 0.9);
+        } else {
+          alpha = clamp(alpha, 0.0, 0.96);
+        }
 
         gl_FragColor = vec4(lit, alpha);
       }
@@ -196,6 +260,19 @@ export default function ShaderBubble3() {
         <sphereGeometry args={[radius, 256, 256]} />
         <primitive object={material} attach="material" />
       </mesh>
+      
+      {/* 배경 구 (버튼 2일 때만 표시) */}
+      {styleType === 2 && (
+        <mesh position={[0, yBottom, -0.5]}>
+          <sphereGeometry args={[radius * 1.2, 128, 128]} />
+          <meshBasicMaterial 
+            color="#4ecdc4" 
+            transparent 
+            opacity={0.3}
+            side={THREE.DoubleSide}
+          />
+        </mesh>
+      )}
     </>
   )
 }

@@ -2,7 +2,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 
-export default function ShaderBubble1() {
+export default function ShaderBubble4() {
   const material = useMemo(() => new THREE.ShaderMaterial({
     uniforms: {
       time: { value: 0 },
@@ -21,7 +21,7 @@ export default function ShaderBubble1() {
         gl_Position = projectionMatrix * viewMatrix * worldPos;
       }
     `,
-      fragmentShader: `
+    fragmentShader: `
       precision highp float;
       uniform float time;
       uniform vec3 lightDir;
@@ -97,19 +97,19 @@ export default function ShaderBubble1() {
         float loopT   = mod(time, loopSec) / loopSec;
         float phase = -loopT;
         
-        // 일렁이는 빛 효과
+        // 일렁이는 빛 효과 (2번 구와 같은 방식)
         float ripple1 = noise(vUv * 3.0 + time * 0.5) * 0.1;
         float ripple2 = noise(vUv * 5.0 + time * 0.3) * 0.05;
         float ripple3 = noise(vUv * 7.0 + time * 0.7) * 0.03;
         float totalRipple = ripple1 + ripple2 + ripple3;
         
-        // 일레스틱 웨이브 효과
+        // 일레스틱 웨이브 효과 (2번 구와 같은 방식)
         float elastic1 = elasticWave(topness * 2.0 + time * 0.4, 3.0, 0.15);
         float elastic2 = elasticWave(topness * 3.0 + time * 0.6, 2.0, 0.08);
         float totalElastic = elastic1 + elastic2;
         
-        // 블러 효과 (1번 구는 블러 없음)
-        float blurAmount = 0.0;
+        // 블러 효과 (약화)
+        float blurAmount = 0.02;
         float f1 = topness * scale + phase + totalRipple + totalElastic;
         float f2 = topness * scale + phase + blurAmount + totalRipple * 0.8 + totalElastic * 0.6;
         float f3 = topness * scale + phase + (blurAmount * 1.5) + totalRipple * 0.6 + totalElastic * 0.4;
@@ -124,10 +124,10 @@ export default function ShaderBubble1() {
         float wobble3 = 0.997 + 0.003*n2(vUv*2.2 + time*0.06 + 3.1);
         w1 *= wobble1; w2 *= wobble2; w3 *= wobble3;
 
-        // 1번 구: 핑크 홀로그램 색상 팔레트
-        vec3 cY = vec3(1.00, 0.84, 0.70);
-        vec3 cP = vec3(1.00, 0.62, 0.92);
-        vec3 cU = vec3(0.82, 0.70, 1.00);
+        // 스타일 4: 핑크 홀로그램 색상 팔레트
+        vec3 cY = vec3(1.00, 0.84, 0.70);  // 핑크 베이스
+        vec3 cP = vec3(1.00, 0.62, 0.92);  // 핑크
+        vec3 cU = vec3(0.82, 0.70, 1.00);  // 라벤더
 
         w1 *= vec3(0.18, 1.0, 0.95);
         w2 *= vec3(0.18, 1.0, 0.95);
@@ -146,7 +146,7 @@ export default function ShaderBubble1() {
         vec3 lit = base;
         lit = mix(lit, flowColor, flowMaskAvg * 0.95);
         
-        // 일렁이는 빛 효과 적용
+        // 일렁이는 빛 효과 적용 (핑크 홀로그램)
         vec3 rippleColor = vec3(1.0, 0.9, 0.8) * totalRipple * 0.3;
         vec3 elasticColor = vec3(0.9, 0.7, 1.0) * totalElastic * 0.2;
         lit += rippleColor + elasticColor;
@@ -154,31 +154,31 @@ export default function ShaderBubble1() {
         vec3 V = vec3(0.0, 0.0, 1.0);
         float fres = pow(1.0 - max(dot(N, V), 0.0), 2.6);
         
-        // 1번 구 홀로그램 효과
-        // 홀로그램 무지개 효과 (더 진한 컬러)
-        float hologramAngle = atan(vUv.y - 0.5, vUv.x - 0.5) + time * 0.5;
-        float hologramFreq = 3.0;
+        // 중앙에서 퍼지는 홀로그램 파동 효과
+        float centerDistance = length(p);
+        float wavePhase = centerDistance * 8.0 - time * 3.0;
+        
+        // 홀로그램 색상이 파동처럼 퍼지는 효과
         vec3 hologramColor = vec3(
-          0.2 + 0.8 * sin(hologramAngle * hologramFreq + 0.0),
-          0.2 + 0.8 * sin(hologramAngle * hologramFreq + 2.094),
-          0.2 + 0.8 * sin(hologramAngle * hologramFreq + 4.188)
+          0.2 + 0.8 * sin(wavePhase + 0.0),
+          0.2 + 0.8 * sin(wavePhase + 2.094),
+          0.2 + 0.8 * sin(wavePhase + 4.188)
         );
         
-        // 홀로그램 스캔라인 효과
-        float scanline = sin(vUv.y * 50.0 + time * 10.0) * 0.1 + 0.9;
-        hologramColor *= scanline;
+        // 파동의 강도가 중심에서 바깥쪽으로 감쇠
+        float waveIntensity = exp(-centerDistance * 2.0) * (1.0 + sin(wavePhase) * 0.5);
         
-        // 홀로그램 글로우 (무지개색) - 더 강하게
-        float hologramGlow = smoothstep(0.3, 0.0, r) * 0.7;
+        // 홀로그램 스캔라인 효과 (파동과 함께)
+        float scanline = sin(centerDistance * 20.0 + time * 5.0) * 0.1 + 0.9;
+        hologramColor *= scanline * waveIntensity;
+        
+        // 중앙에서 퍼지는 홀로그램 글로우 (약화)
+        float hologramGlow = smoothstep(0.4, 0.0, r) * waveIntensity * 0.5;
         lit += hologramColor * hologramGlow;
         
-        // 홀로그램 림 효과 - 더 강하게
-        float hologramRim = pow(1.0 - max(dot(N, V), 0.0), 1.5);
-        lit += hologramColor * hologramRim * 1.0;
-        
-        // 홀로그램 반투명 효과
-        float hologramAlpha = 0.3 + 0.4 * sin(time * 2.0 + r * 10.0);
-        lit *= (1.0 + hologramAlpha * 0.5);
+        // 파동의 가장자리 홀로그램 효과 (약화)
+        float hologramRim = pow(1.0 - max(dot(N, V), 0.0), 1.2) * waveIntensity;
+        lit += hologramColor * hologramRim * 0.5;
 
         lit += vec3(0.72, 0.57, 1.02) * (1.0 - topness) * 0.14;
 
@@ -192,8 +192,7 @@ export default function ShaderBubble1() {
         float edgeFeather = smoothstep(0.52, 0.36, r);
         float alpha = 0.80 * edgeFeather + fres*0.10;
         
-        // 1번 구 홀로그램 알파 효과
-        // 홀로그램 반투명 효과
+        // 핑크 홀로그램 알파 효과
         float hologramFlicker = 0.7 + 0.3 * sin(time * 3.0 + r * 15.0);
         alpha *= hologramFlicker;
         alpha = clamp(alpha, 0.3, 0.9);

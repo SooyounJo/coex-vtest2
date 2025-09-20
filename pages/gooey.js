@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import Head from 'next/head'
-import GooeyShader from '../components/GooeyShader'
+import GooeyShader from '../components/6'
 
 export default function GooeyPage() {
 
@@ -8,7 +8,7 @@ export default function GooeyPage() {
     <>
       <Head>
         <title>Gooey Effect</title>
-        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
       </Head>
       
       <div className="gooey-page">
@@ -48,12 +48,11 @@ export default function GooeyPage() {
 
         .style-title {
           color: #ff62e8;
-          font-family: 'Noto Sans KR', sans-serif;
+          font-family: 'Poppins', sans-serif;
           font-size: 1.8rem;
-          font-weight: 700;
+          font-weight: 300;
           margin: 0;
           text-align: center;
-          text-shadow: 0 2px 4px rgba(255, 98, 232, 0.3);
           letter-spacing: 0.1em;
         }
 

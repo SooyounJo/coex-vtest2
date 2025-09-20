@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import Head from 'next/head'
 import { Canvas } from '@react-three/fiber'
-import ShaderBubble1 from '../components/ShaderBubble1'
-import ShaderBubble2 from '../components/ShaderBubble2'
-import ShaderBubble3 from '../components/ShaderBubble3'
-import ShaderBubble4 from '../components/ShaderBubble4'
-import ShaderBubble5 from '../components/ShaderBubble5'
+import ShaderBubble from '../components/1'
+import ShaderBubble2 from '../components/2'
+import ShaderBubble3 from '../components/3'
+import ShaderBubble4 from '../components/4'
+import ShaderBubble5 from '../components/5'
 import { useRouter } from 'next/router'
 
 export default function Home() {
@@ -27,7 +27,7 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin />
-        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
       </Head>
 
       <div className="app-container">
@@ -42,12 +42,12 @@ export default function Home() {
             <color attach="background" args={["#ffffff"]} />
             <ambientLight intensity={0.3} />
             <directionalLight position={[2, 3, 2]} intensity={0.5} />
-            {selectedStyle === 1 ? <ShaderBubble1 /> : 
+            {selectedStyle === 1 ? <ShaderBubble styleType={selectedStyle} /> : 
              selectedStyle === 2 ? <ShaderBubble2 /> : 
-             selectedStyle === 3 ? <ShaderBubble3 /> : 
-             selectedStyle === 4 ? <ShaderBubble4 /> : 
-             selectedStyle === 5 ? <ShaderBubble5 /> : 
-             <ShaderBubble1 />}
+             selectedStyle === 3 ? <ShaderBubble4 /> : 
+             selectedStyle === 4 ? <ShaderBubble5 /> : 
+             selectedStyle === 5 ? <ShaderBubble3 /> : 
+             <ShaderBubble styleType={selectedStyle} />}
           </Canvas>
           
         {/* 6번 버튼은 별도 페이지로 이동 */}
@@ -55,7 +55,7 @@ export default function Home() {
           {/* 버튼별 제목 표시 */}
           {selectedStyle === 1 && (
             <div className="title-overlay">
-              <h1 className="style-title">Pink Wave</h1>
+              <h1 className="style-title">Origin</h1>
             </div>
           )}
           {selectedStyle === 2 && (
@@ -65,12 +65,12 @@ export default function Home() {
           )}
           {selectedStyle === 3 && (
             <div className="title-overlay">
-              <h1 className="style-title">Orange Wave</h1>
+              <h1 className="style-title">Big Wave</h1>
             </div>
           )}
           {selectedStyle === 4 && (
             <div className="title-overlay">
-              <h1 className="style-title">Big Wave</h1>
+              <h1 className="style-title">Organic Shape</h1>
             </div>
           )}
           {selectedStyle === 5 && (
@@ -119,12 +119,11 @@ export default function Home() {
 
         .style-title {
           color: #ffb6c1;
-          font-family: 'Noto Sans KR', sans-serif;
+          font-family: 'Poppins', sans-serif;
           font-size: 1.8rem;
-          font-weight: 700;
+          font-weight: 300;
           margin: 0;
           text-align: center;
-          text-shadow: 0 2px 4px rgba(255, 182, 193, 0.3);
           letter-spacing: 0.1em;
         }
 
