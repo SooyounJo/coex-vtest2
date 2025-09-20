@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 export default function GooeyShader() {
   const containerRef = useRef(null)
+  const [isAbsorbed, setIsAbsorbed] = useState(false)
 
   useEffect(() => {
     const parent = containerRef.current
@@ -22,7 +23,9 @@ export default function GooeyShader() {
       const initY = (Math.random() * window.innerHeight) - (window.innerHeight / 2)
       const actionX = (Math.random() * window.innerWidth) - (window.innerWidth / 2)
       const actionY = (Math.random() * window.innerHeight) - (window.innerHeight / 2)
-      const circleSize = Math.random() * 80 + 20
+      const circleSize = window.innerWidth <= 768 ? 
+        Math.random() * 50 + 15 : 
+        Math.random() * 80 + 20
       const time = Math.random() * 10 + 3
       
       newDIV.style.position = 'absolute'
@@ -34,12 +37,28 @@ export default function GooeyShader() {
       newDIV.style.background = 'black'
       newDIV.style.animation = `groom-${i} ${time}s infinite alternate`
       
-      // 동적 키프레임 생성 (원본과 동일)
+      // 동적 키프레임 생성 (흡수/확산 애니메이션 포함)
       const style = document.createElement('style')
       style.textContent = `
         @keyframes groom-${i} {
           50% {
             transform: translate(${actionX}px, ${actionY}px);
+          }
+        }
+        @keyframes absorb-${i} {
+          0% {
+            transform: translate(${initX}px, ${initY}px);
+          }
+          100% {
+            transform: translate(0px, 0px);
+          }
+        }
+        @keyframes expand-${i} {
+          0% {
+            transform: translate(0px, 0px);
+          }
+          100% {
+            transform: translate(${initX}px, ${initY}px);
           }
         }
       `
@@ -51,8 +70,37 @@ export default function GooeyShader() {
     console.log('Gooey circles created:', parent.children.length)
   }, [])
 
+  const handleTouch = () => {
+    const circles = document.querySelectorAll('.circle')
+    const centerCircle = document.querySelector('.center-circle')
+    
+    if (!isAbsorbed) {
+      // 흡수 애니메이션
+      circles.forEach((circle, index) => {
+        const circleClass = circle.classList[1] // groom-1, groom-2 등
+        circle.style.animation = `absorb-${circleClass.split('-')[1]} 0.8s ease-in-out forwards`
+      })
+      
+      // 중앙 원 확대
+      centerCircle.style.animation = 'pulse 0.8s ease-in-out'
+      
+      setIsAbsorbed(true)
+    } else {
+      // 확산 애니메이션
+      circles.forEach((circle, index) => {
+        const circleClass = circle.classList[1]
+        circle.style.animation = `expand-${circleClass.split('-')[1]} 0.8s ease-in-out forwards`
+      })
+      
+      // 중앙 원 원래대로
+      centerCircle.style.animation = 'none'
+      
+      setIsAbsorbed(false)
+    }
+  }
+
   return (
-    <div className="gooey-container">
+    <div className="gooey-container" onClick={handleTouch}>
       <div className="frame">
         <div className="center">
           <div className="groom-wrap" ref={containerRef}>
@@ -73,7 +121,8 @@ export default function GooeyShader() {
           align-items: center;
           justify-content: center;
           z-index: 2;
-          pointer-events: none;
+          pointer-events: auto;
+          cursor: pointer;
         }
 
         .frame {
@@ -111,6 +160,20 @@ export default function GooeyShader() {
           border-radius: 50%;
         }
 
+        @media (max-width: 768px) {
+          .center-circle {
+            width: 120px;
+            height: 120px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .center-circle {
+            width: 100px;
+            height: 100px;
+          }
+        }
+
         .circle {
           border: 1px solid black;
           background: black;
@@ -123,6 +186,18 @@ export default function GooeyShader() {
           }
           100% {
             transform: rotate(360deg);
+          }
+        }
+
+        @keyframes pulse {
+          0% {
+            transform: scale(1);
+          }
+          50% {
+            transform: scale(1.2);
+          }
+          100% {
+            transform: scale(1);
           }
         }
 

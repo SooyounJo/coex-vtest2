@@ -261,7 +261,7 @@ export default function ShaderBubble5() {
   const { camera, viewport } = useThree()
   const v = viewport.getCurrentViewport(camera, [0, 0, 0])
 
-  const radius = Math.min(v.width, v.height) * 0.33
+  const radius = Math.min(v.width, v.height) * (window.innerWidth <= 768 ? 0.45 : 0.33)
   const margin = v.height * 0.035
   const yBottom = -v.height / 2 + radius + margin
 

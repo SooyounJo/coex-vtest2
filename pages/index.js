@@ -202,27 +202,77 @@ export default function Home() {
         }
 
         @media (max-width: 768px) {
+          .app-container {
+            height: 100vh;
+            overflow: hidden;
+          }
+
+          .canvas-container {
+            height: calc(100vh - 120px);
+            margin-bottom: 120px;
+          }
+
           .controls {
-            bottom: 20px;
-            padding: 15px 20px;
+            bottom: 10px;
+            padding: 10px 15px;
+            position: fixed;
+            width: calc(100% - 30px);
+            left: 15px;
+            right: 15px;
           }
           
           .button-grid {
-            gap: 10px;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
           }
           
           .style-button {
-            width: 40px;
-            height: 40px;
-            font-size: 1rem;
+            width: 35px;
+            height: 35px;
+            font-size: 0.9rem;
+            min-width: 35px;
           }
 
           .title-overlay {
-            top: 30px;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
           }
 
           .style-title {
-            font-size: 1.4rem;
+            font-size: 1.2rem;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .canvas-container {
+            height: calc(100vh - 100px);
+            margin-bottom: 100px;
+          }
+
+          .controls {
+            bottom: 5px;
+            padding: 8px 10px;
+            width: calc(100% - 20px);
+            left: 10px;
+            right: 10px;
+          }
+          
+          .button-grid {
+            gap: 6px;
+          }
+          
+          .style-button {
+            width: 30px;
+            height: 30px;
+            font-size: 0.8rem;
+            min-width: 30px;
+          }
+
+          .style-title {
+            font-size: 1rem;
           }
         }
       `}</style>

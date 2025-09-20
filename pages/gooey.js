@@ -20,7 +20,7 @@ export default function GooeyPage() {
         <GooeyShader />
 
         <div className="back-button">
-          <button onClick={() => window.history.back()}>← 뒤로가기</button>
+          <button onClick={() => window.history.back()}>←</button>
         </div>
       </div>
 
@@ -74,22 +74,26 @@ export default function GooeyPage() {
         }
 
         .back-button button {
-          background: rgba(255, 98, 232, 0.9);
+          background: rgba(0, 0, 0, 0.7);
           border: none;
-          padding: 10px 20px;
-          border-radius: 25px;
+          padding: 8px 12px;
+          border-radius: 50%;
           color: white;
-          font-family: 'Noto Sans KR', sans-serif;
-          font-weight: 600;
+          font-family: 'Poppins', sans-serif;
+          font-weight: 300;
           cursor: pointer;
           transition: all 0.3s ease;
-          box-shadow: 0 2px 10px rgba(255, 98, 232, 0.3);
+          width: 40px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 18px;
         }
 
         .back-button button:hover {
-          background: rgba(255, 98, 232, 1);
-          transform: translateY(-2px);
-          box-shadow: 0 4px 15px rgba(255, 98, 232, 0.4);
+          background: rgba(0, 0, 0, 0.9);
+          transform: scale(1.1);
         }
 
         @media (max-width: 768px) {
