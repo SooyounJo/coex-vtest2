@@ -6,9 +6,19 @@ import ShaderBubble2 from '../components/ShaderBubble2'
 import ShaderBubble3 from '../components/ShaderBubble3'
 import ShaderBubble4 from '../components/ShaderBubble4'
 import ShaderBubble5 from '../components/ShaderBubble5'
+import { useRouter } from 'next/router'
 
 export default function Home() {
   const [selectedStyle, setSelectedStyle] = useState(1)
+  const router = useRouter()
+
+  const handleStyleChange = (style) => {
+    if (style === 6) {
+      router.push('/gooey')
+    } else {
+      setSelectedStyle(style)
+    }
+  }
 
   return (
     <>
@@ -34,16 +44,38 @@ export default function Home() {
             <directionalLight position={[2, 3, 2]} intensity={0.5} />
             {selectedStyle === 1 ? <ShaderBubble styleType={selectedStyle} /> : 
              selectedStyle === 2 ? <ShaderBubble2 /> : 
-             selectedStyle === 3 ? <ShaderBubble3 /> : 
-             selectedStyle === 4 ? <ShaderBubble4 /> : 
+             selectedStyle === 3 ? <ShaderBubble4 /> : 
+             selectedStyle === 4 ? <ShaderBubble3 /> : 
              selectedStyle === 5 ? <ShaderBubble5 /> : 
              <ShaderBubble styleType={selectedStyle} />}
           </Canvas>
           
-          {/* 1번 버튼 선택 시 제목 표시 */}
+        {/* 6번 버튼은 별도 페이지로 이동 */}
+          
+          {/* 버튼별 제목 표시 */}
           {selectedStyle === 1 && (
             <div className="title-overlay">
-              <h1 className="style-title">연분홍 파동</h1>
+              <h1 className="style-title">Pink Wave</h1>
+            </div>
+          )}
+          {selectedStyle === 2 && (
+            <div className="title-overlay">
+              <h1 className="style-title">Magenta Wave</h1>
+            </div>
+          )}
+          {selectedStyle === 3 && (
+            <div className="title-overlay">
+              <h1 className="style-title">Orange Wave</h1>
+            </div>
+          )}
+          {selectedStyle === 4 && (
+            <div className="title-overlay">
+              <h1 className="style-title">Organic Shape</h1>
+            </div>
+          )}
+          {selectedStyle === 5 && (
+            <div className="title-overlay">
+              <h1 className="style-title">Big Wave</h1>
             </div>
           )}
         </div>
@@ -51,11 +83,11 @@ export default function Home() {
         {/* 버튼 컨트롤 */}
         <div className="controls">
           <div className="button-grid">
-            {[1, 2, 3, 4, 5].map((num) => (
+            {[1, 2, 3, 4, 5, 6].map((num) => (
               <button
                 key={num}
                 className={`style-button ${selectedStyle === num ? 'active' : ''}`}
-                onClick={() => setSelectedStyle(num)}
+                onClick={() => handleStyleChange(num)}
               >
                 {num}
               </button>
@@ -88,13 +120,14 @@ export default function Home() {
         .style-title {
           color: #ffb6c1;
           font-family: 'Noto Sans KR', sans-serif;
-          font-size: 2.5rem;
+          font-size: 1.8rem;
           font-weight: 700;
           margin: 0;
           text-align: center;
           text-shadow: 0 2px 4px rgba(255, 182, 193, 0.3);
           letter-spacing: 0.1em;
         }
+
 
         .r3f-canvas {
           width: 100%;
@@ -190,7 +223,7 @@ export default function Home() {
           }
 
           .style-title {
-            font-size: 2rem;
+            font-size: 1.4rem;
           }
         }
       `}</style>
