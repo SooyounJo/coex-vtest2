@@ -77,7 +77,7 @@ export default function GooeyPage() {
           left: 0;
           width: 100vw;
           height: 100vh;
-          background: linear-gradient(135deg, #0a1a2e, #16213e, #1e3a8a);
+          background: linear-gradient(135deg, #1a0a1a, #2e162e, #4a1e4a);
         }
 
 
