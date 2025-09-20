@@ -229,7 +229,9 @@ export default function ShaderBubble3() {
 
   const radius = Math.min(v.width, v.height) * (window.innerWidth <= 768 ? 0.45 : 0.33)
   const margin = v.height * 0.035
-  const yBottom = -v.height / 2 + radius + margin
+  const yBottom = window.innerWidth <= 768 ? 
+    -v.height / 2 + radius + margin + v.height * 0.1 : // 모바일: 중앙보다 10% 아래
+    -v.height / 2 + radius + margin // 데스크톱: 기존 위치
 
   return (
     <>

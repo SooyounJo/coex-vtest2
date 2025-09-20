@@ -195,48 +195,22 @@ export default function GooeyPage() {
             bottom: 10px;
             left: 50%;
             transform: translateX(-50%);
-            padding: 8px 12px;
-            width: auto;
-            max-width: calc(100vw - 20px);
-            min-width: 280px;
-          }
-          
-          .button-grid {
-            gap: 6px;
-            justify-content: center;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            padding: 0 5px;
-            width: 100%;
-          }
-          
-          .style-button {
-            width: 32px;
-            height: 32px;
-            font-size: 0.85rem;
-            min-width: 32px;
-            flex-shrink: 0;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .controls {
-            bottom: 8px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 6px 10px;
-            width: auto;
-            max-width: calc(100vw - 16px);
-            min-width: 260px;
+            padding: 6px 8px;
+            width: calc(100vw - 16px);
+            max-width: 400px;
+            min-width: 0;
           }
           
           .button-grid {
             gap: 4px;
-            justify-content: center;
+            justify-content: space-between;
             flex-wrap: nowrap;
             overflow-x: auto;
-            padding: 0 3px;
+            padding: 0 2px;
             width: 100%;
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            align-items: center;
           }
           
           .style-button {
@@ -245,6 +219,40 @@ export default function GooeyPage() {
             font-size: 0.8rem;
             min-width: 28px;
             flex-shrink: 0;
+            justify-self: center;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .controls {
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 4px 6px;
+            width: calc(100vw - 12px);
+            max-width: 360px;
+            min-width: 0;
+          }
+          
+          .button-grid {
+            gap: 3px;
+            justify-content: space-between;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding: 0 1px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            align-items: center;
+          }
+          
+          .style-button {
+            width: 24px;
+            height: 24px;
+            font-size: 0.75rem;
+            min-width: 24px;
+            flex-shrink: 0;
+            justify-self: center;
           }
         }
       `}</style>

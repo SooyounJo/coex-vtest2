@@ -223,7 +223,7 @@ export default function Home() {
           .canvas-container {
             flex: 1;
             width: 100%;
-            height: calc(100vh - 80px);
+            height: calc(100vh - 90px);
             margin-bottom: 0;
           }
 
@@ -232,27 +232,31 @@ export default function Home() {
             bottom: 10px;
             left: 50%;
             transform: translateX(-50%);
-            padding: 8px 12px;
-            width: auto;
-            max-width: calc(100vw - 20px);
-            min-width: 280px;
+            padding: 6px 8px;
+            width: calc(100vw - 16px);
+            max-width: 400px;
+            min-width: 0;
           }
           
           .button-grid {
-            gap: 6px;
-            justify-content: center;
+            gap: 4px;
+            justify-content: space-between;
             flex-wrap: nowrap;
             overflow-x: auto;
-            padding: 0 5px;
+            padding: 0 2px;
             width: 100%;
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            align-items: center;
           }
           
           .style-button {
-            width: 32px;
-            height: 32px;
-            font-size: 0.85rem;
-            min-width: 32px;
+            width: 28px;
+            height: 28px;
+            font-size: 0.8rem;
+            min-width: 28px;
             flex-shrink: 0;
+            justify-self: center;
           }
 
           .title-overlay {
@@ -281,7 +285,7 @@ export default function Home() {
           .canvas-container {
             flex: 1;
             width: 100%;
-            height: calc(100vh - 70px);
+            height: calc(100vh - 80px);
             margin-bottom: 0;
           }
 
@@ -290,27 +294,31 @@ export default function Home() {
             bottom: 8px;
             left: 50%;
             transform: translateX(-50%);
-            padding: 6px 10px;
-            width: auto;
-            max-width: calc(100vw - 16px);
-            min-width: 260px;
+            padding: 4px 6px;
+            width: calc(100vw - 12px);
+            max-width: 360px;
+            min-width: 0;
           }
           
           .button-grid {
-            gap: 4px;
-            justify-content: center;
+            gap: 3px;
+            justify-content: space-between;
             flex-wrap: nowrap;
             overflow-x: auto;
-            padding: 0 3px;
+            padding: 0 1px;
             width: 100%;
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            align-items: center;
           }
           
           .style-button {
-            width: 28px;
-            height: 28px;
-            font-size: 0.8rem;
-            min-width: 28px;
+            width: 24px;
+            height: 24px;
+            font-size: 0.75rem;
+            min-width: 24px;
             flex-shrink: 0;
+            justify-self: center;
           }
 
           .title-overlay {
