@@ -146,16 +146,17 @@ export default function Home() {
           bottom: 30px;
           left: 50%;
           transform: translateX(-50%);
-          background: rgba(255, 255, 255, 0.25);
-          backdrop-filter: blur(30px);
-          border: 1px solid rgba(255, 255, 255, 0.4);
+          background: rgba(255, 255, 255, 0.15);
+          backdrop-filter: blur(20px) saturate(1.8);
+          border: 1px solid rgba(255, 255, 255, 0.2);
           border-radius: 25px;
           padding: 20px 30px;
           box-shadow: 
-            0 12px 40px rgba(0, 0, 0, 0.15),
-            inset 0 1px 0 rgba(255, 255, 255, 0.6),
+            0 12px 40px rgba(0, 0, 0, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3),
             0 0 20px rgba(255, 255, 255, 0.1);
           z-index: 10;
+          -webkit-backdrop-filter: blur(20px) saturate(1.8);
         }
 
         .button-grid {
@@ -169,9 +170,9 @@ export default function Home() {
           height: 50px;
           border: none;
           border-radius: 50%;
-          background: rgba(255, 255, 255, 0.3);
-          backdrop-filter: blur(15px);
-          border: 1px solid rgba(255, 255, 255, 0.5);
+          background: rgba(255, 255, 255, 0.2);
+          backdrop-filter: blur(15px) saturate(1.5);
+          border: 1px solid rgba(255, 255, 255, 0.3);
           color: rgba(255, 255, 255, 0.95);
           font-size: 1.2rem;
           font-weight: 600;
@@ -181,9 +182,10 @@ export default function Home() {
           align-items: center;
           justify-content: center;
           box-shadow: 
-            0 6px 20px rgba(0, 0, 0, 0.15),
-            inset 0 1px 0 rgba(255, 255, 255, 0.4),
+            0 6px 20px rgba(0, 0, 0, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3),
             0 0 15px rgba(255, 255, 255, 0.1);
+          -webkit-backdrop-filter: blur(15px) saturate(1.5);
         }
 
         .style-button:hover {
@@ -212,28 +214,95 @@ export default function Home() {
           .app-container {
             height: 100vh;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
           }
 
           .canvas-container {
-            height: calc(100vh - 100px);
-            margin-bottom: 100px;
+            flex: 1;
+            width: 100%;
+            height: calc(100vh - 80px);
+            margin-bottom: 0;
           }
 
           .controls {
-            bottom: 5px;
-            padding: 8px 10px;
             position: fixed;
-            width: calc(100% - 20px);
-            left: 10px;
-            right: 10px;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 8px 12px;
+            width: auto;
+            max-width: calc(100vw - 20px);
+            min-width: 280px;
+          }
+          
+          .button-grid {
+            gap: 6px;
+            justify-content: center;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding: 0 5px;
+            width: 100%;
+          }
+          
+          .style-button {
+            width: 32px;
+            height: 32px;
+            font-size: 0.85rem;
+            min-width: 32px;
+            flex-shrink: 0;
+          }
+
+          .title-overlay {
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            z-index: 5;
+          }
+
+          .style-title {
+            font-size: 1.2rem;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .app-container {
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+          }
+
+          .canvas-container {
+            flex: 1;
+            width: 100%;
+            height: calc(100vh - 70px);
+            margin-bottom: 0;
+          }
+
+          .controls {
+            position: fixed;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 6px 10px;
+            width: auto;
+            max-width: calc(100vw - 16px);
+            min-width: 260px;
           }
           
           .button-grid {
             gap: 4px;
-            justify-content: space-between;
+            justify-content: center;
             flex-wrap: nowrap;
             overflow-x: auto;
-            padding: 0 5px;
+            padding: 0 3px;
+            width: 100%;
           }
           
           .style-button {
@@ -249,45 +318,11 @@ export default function Home() {
             left: 50%;
             transform: translateX(-50%);
             width: 90%;
+            z-index: 5;
           }
 
           .style-title {
-            font-size: 1.1rem;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .canvas-container {
-            height: calc(100vh - 90px);
-            margin-bottom: 90px;
-          }
-
-          .controls {
-            bottom: 3px;
-            padding: 6px 8px;
-            width: calc(100% - 16px);
-            left: 8px;
-            right: 8px;
-          }
-          
-          .button-grid {
-            gap: 3px;
-            justify-content: space-between;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            padding: 0 3px;
-          }
-          
-          .style-button {
-            width: 26px;
-            height: 26px;
-            font-size: 0.75rem;
-            min-width: 26px;
-            flex-shrink: 0;
-          }
-
-          .style-title {
-            font-size: 0.9rem;
+            font-size: 1rem;
           }
         }
       `}</style>

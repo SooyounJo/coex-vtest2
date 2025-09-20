@@ -22,6 +22,28 @@ export default function GooeyPage() {
         <div className="back-button">
           <button onClick={() => window.history.back()}>←</button>
         </div>
+
+        {/* 버튼 컨트롤 */}
+        <div className="controls">
+          <div className="button-grid">
+            {[1, 2, 3, 4, 5, 6, 7].map((num) => (
+              <button
+                key={num}
+                className={`style-button ${num === 6 ? 'active' : ''}`}
+                onClick={() => {
+                  if (num === 6) return; // 6번은 현재 페이지
+                  if (num === 7) {
+                    window.location.href = '/?style=7';
+                  } else {
+                    window.location.href = `/?style=${num}`;
+                  }
+                }}
+              >
+                {num}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       <style jsx>{`
@@ -96,9 +118,133 @@ export default function GooeyPage() {
           transform: scale(1.1);
         }
 
+        .controls {
+          position: fixed;
+          bottom: 20px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(255, 255, 255, 0.15);
+          backdrop-filter: blur(20px) saturate(1.8);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: 25px;
+          padding: 15px 25px;
+          box-shadow: 
+            0 12px 40px rgba(0, 0, 0, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3),
+            0 0 20px rgba(255, 255, 255, 0.1);
+          z-index: 10;
+          -webkit-backdrop-filter: blur(20px) saturate(1.8);
+        }
+
+        .button-grid {
+          display: flex;
+          gap: 15px;
+          align-items: center;
+        }
+
+        .style-button {
+          width: 50px;
+          height: 50px;
+          border: none;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.2);
+          backdrop-filter: blur(15px) saturate(1.5);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          color: rgba(255, 255, 255, 0.95);
+          font-size: 1.2rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 
+            0 6px 20px rgba(0, 0, 0, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.3),
+            0 0 15px rgba(255, 255, 255, 0.1);
+          -webkit-backdrop-filter: blur(15px) saturate(1.5);
+        }
+
+        .style-button:hover {
+          background: rgba(255, 255, 255, 0.4);
+          transform: translateY(-3px) scale(1.05);
+          box-shadow: 
+            0 10px 30px rgba(0, 0, 0, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.6),
+            0 0 25px rgba(255, 255, 255, 0.2);
+        }
+
+        .style-button.active {
+          background: linear-gradient(135deg, 
+            rgba(255, 20, 147, 0.3), 
+            rgba(255, 105, 180, 0.2));
+          border: 1px solid rgba(255, 20, 147, 0.5);
+          box-shadow: 
+            0 8px 25px rgba(255, 20, 147, 0.3),
+            inset 0 1px 0 rgba(255, 255, 255, 0.5),
+            0 0 30px rgba(255, 20, 147, 0.3);
+          border: 1px solid rgba(255, 20, 147, 0.6);
+        }
+
         @media (max-width: 768px) {
           .style-title {
             font-size: 1.4rem;
+          }
+
+          .controls {
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 8px 12px;
+            width: auto;
+            max-width: calc(100vw - 20px);
+            min-width: 280px;
+          }
+          
+          .button-grid {
+            gap: 6px;
+            justify-content: center;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding: 0 5px;
+            width: 100%;
+          }
+          
+          .style-button {
+            width: 32px;
+            height: 32px;
+            font-size: 0.85rem;
+            min-width: 32px;
+            flex-shrink: 0;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .controls {
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 6px 10px;
+            width: auto;
+            max-width: calc(100vw - 16px);
+            min-width: 260px;
+          }
+          
+          .button-grid {
+            gap: 4px;
+            justify-content: center;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding: 0 3px;
+            width: 100%;
+          }
+          
+          .style-button {
+            width: 28px;
+            height: 28px;
+            font-size: 0.8rem;
+            min-width: 28px;
+            flex-shrink: 0;
           }
         }
       `}</style>
