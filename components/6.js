@@ -206,14 +206,64 @@ export default function GooeyShader() {
           filter: blur(10px) contrast(10);
           position: relative;
           animation: rotate 20s infinite linear;
+          backdrop-filter: blur(20px) saturate(1.8);
+          -webkit-backdrop-filter: blur(20px) saturate(1.8);
         }
 
         .center-circle {
           width: 200px;
           height: 200px;
-          border: 1px solid black;
-          background: black;
+          border: 2px solid rgba(255, 255, 255, 0.3);
+          background: linear-gradient(135deg, 
+            rgba(200, 180, 200, 0.8), 
+            rgba(180, 160, 180, 0.7),
+            rgba(220, 200, 220, 0.9));
           border-radius: 50%;
+          backdrop-filter: blur(20px) saturate(1.8);
+          -webkit-backdrop-filter: blur(20px) saturate(1.8);
+          box-shadow: 
+            0 12px 40px rgba(200, 180, 200, 0.3),
+            inset 0 2px 0 rgba(255, 255, 255, 0.2),
+            0 0 30px rgba(200, 180, 200, 0.2);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .center-circle::before {
+          content: '';
+          position: absolute;
+          top: -8px;
+          left: -8px;
+          right: -8px;
+          bottom: -8px;
+          background: conic-gradient(
+            from 0deg,
+            rgba(255, 100, 200, 0.4),
+            rgba(100, 200, 255, 0.4),
+            rgba(200, 255, 100, 0.4),
+            rgba(255, 200, 100, 0.4),
+            rgba(255, 100, 200, 0.4)
+          );
+          border-radius: 50%;
+          animation: chromaticRotate 12s linear infinite;
+          z-index: -1;
+          filter: blur(2px);
+        }
+
+        .center-circle::after {
+          content: '';
+          position: absolute;
+          top: 20%;
+          left: 20%;
+          width: 30%;
+          height: 30%;
+          background: radial-gradient(
+            circle,
+            rgba(255, 255, 255, 0.2) 0%,
+            transparent 70%
+          );
+          border-radius: 50%;
+          animation: shimmer 3s ease-in-out infinite;
         }
 
         @media (max-width: 768px) {
@@ -231,9 +281,57 @@ export default function GooeyShader() {
         }
 
         .circle {
-          border: 1px solid black;
-          background: black;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          background: linear-gradient(135deg, 
+            rgba(200, 180, 200, 0.7), 
+            rgba(180, 160, 180, 0.6),
+            rgba(220, 200, 220, 0.8));
           border-radius: 50%;
+          backdrop-filter: blur(15px) saturate(1.6);
+          -webkit-backdrop-filter: blur(15px) saturate(1.6);
+          box-shadow: 
+            0 6px 20px rgba(200, 180, 200, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.15),
+            0 0 15px rgba(200, 180, 200, 0.15);
+          position: relative;
+          overflow: hidden;
+        }
+
+        .circle::before {
+          content: '';
+          position: absolute;
+          top: -6px;
+          left: -6px;
+          right: -6px;
+          bottom: -6px;
+          background: conic-gradient(
+            from 0deg,
+            rgba(255, 100, 200, 0.3),
+            rgba(100, 200, 255, 0.3),
+            rgba(200, 255, 100, 0.3),
+            rgba(255, 200, 100, 0.3),
+            rgba(255, 100, 200, 0.3)
+          );
+          border-radius: 50%;
+          animation: chromaticRotate 10s linear infinite;
+          z-index: -1;
+          filter: blur(1px);
+        }
+
+        .circle::after {
+          content: '';
+          position: absolute;
+          top: 25%;
+          left: 25%;
+          width: 20%;
+          height: 20%;
+          background: radial-gradient(
+            circle,
+            rgba(255, 255, 255, 0.1) 0%,
+            transparent 70%
+          );
+          border-radius: 50%;
+          animation: shimmer 4s ease-in-out infinite;
         }
 
         @keyframes rotate {
@@ -254,6 +352,26 @@ export default function GooeyShader() {
           }
           100% {
             transform: scale(1);
+          }
+        }
+
+        @keyframes chromaticRotate {
+          0% {
+            transform: rotate(0deg);
+          }
+          100% {
+            transform: rotate(360deg);
+          }
+        }
+
+        @keyframes shimmer {
+          0%, 100% {
+            opacity: 0.3;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.8;
+            transform: scale(1.1);
           }
         }
 

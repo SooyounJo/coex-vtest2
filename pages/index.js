@@ -44,10 +44,10 @@ export default function Home() {
             <ambientLight intensity={0.3} />
             <directionalLight position={[2, 3, 2]} intensity={0.5} />
             {selectedStyle === 1 ? <ShaderBubble styleType={selectedStyle} /> : 
-             selectedStyle === 2 ? <ShaderBubble2 /> : 
-             selectedStyle === 3 ? <ShaderBubble4 /> : 
-             selectedStyle === 4 ? <ShaderBubble5 /> : 
-            selectedStyle === 5 ? <ShaderBubble3 /> : 
+             selectedStyle === 2 ? <ShaderBubble2 styleType={selectedStyle} /> : 
+             selectedStyle === 3 ? <ShaderBubble3 /> : 
+             selectedStyle === 4 ? <ShaderBubble4 /> : 
+            selectedStyle === 5 ? <ShaderBubble5 /> : 
             selectedStyle === 7 ? <AgenticBubble styleType={7} /> :
             <ShaderBubble styleType={selectedStyle} />}
           </Canvas>
@@ -77,12 +77,12 @@ export default function Home() {
           )}
           {selectedStyle === 5 && (
             <div className="title-overlay">
-              <h1 className="style-title">Organic Shape</h1>
+              <h1 className="style-title">Glossy Wave</h1>
             </div>
           )}
           {selectedStyle === 7 && (
             <div className="title-overlay">
-              <h1 className="style-title">Agentic Drop</h1>
+              <h1 className="style-title">Agentic Glow</h1>
             </div>
           )}
         </div>
@@ -229,34 +229,36 @@ export default function Home() {
 
           .controls {
             position: fixed;
-            bottom: 10px;
+            bottom: 8px;
             left: 50%;
             transform: translateX(-50%);
             padding: 6px 8px;
             width: calc(100vw - 16px);
-            max-width: 400px;
+            max-width: 100%;
             min-width: 0;
           }
           
           .button-grid {
-            gap: 4px;
+            gap: 3px;
             justify-content: space-between;
             flex-wrap: nowrap;
             overflow-x: auto;
             padding: 0 2px;
             width: 100%;
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
+            display: flex;
             align-items: center;
           }
           
           .style-button {
             width: 28px;
             height: 28px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             min-width: 28px;
             flex-shrink: 0;
-            justify-self: center;
+            margin: 0 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
           }
 
           .title-overlay {
@@ -291,34 +293,36 @@ export default function Home() {
 
           .controls {
             position: fixed;
-            bottom: 8px;
+            bottom: 6px;
             left: 50%;
             transform: translateX(-50%);
             padding: 4px 6px;
             width: calc(100vw - 12px);
-            max-width: 360px;
+            max-width: 100%;
             min-width: 0;
           }
           
           .button-grid {
-            gap: 3px;
+            gap: 2px;
             justify-content: space-between;
             flex-wrap: nowrap;
             overflow-x: auto;
             padding: 0 1px;
             width: 100%;
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
+            display: flex;
             align-items: center;
           }
           
           .style-button {
             width: 24px;
             height: 24px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             min-width: 24px;
             flex-shrink: 0;
-            justify-self: center;
+            margin: 0 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
           }
 
           .title-overlay {

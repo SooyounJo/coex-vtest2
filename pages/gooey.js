@@ -192,45 +192,12 @@ export default function GooeyPage() {
           }
 
           .controls {
-            bottom: 10px;
+            bottom: 8px;
             left: 50%;
             transform: translateX(-50%);
             padding: 6px 8px;
             width: calc(100vw - 16px);
-            max-width: 400px;
-            min-width: 0;
-          }
-          
-          .button-grid {
-            gap: 4px;
-            justify-content: space-between;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            padding: 0 2px;
-            width: 100%;
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            align-items: center;
-          }
-          
-          .style-button {
-            width: 28px;
-            height: 28px;
-            font-size: 0.8rem;
-            min-width: 28px;
-            flex-shrink: 0;
-            justify-self: center;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .controls {
-            bottom: 8px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 4px 6px;
-            width: calc(100vw - 12px);
-            max-width: 360px;
+            max-width: 100%;
             min-width: 0;
           }
           
@@ -239,20 +206,57 @@ export default function GooeyPage() {
             justify-content: space-between;
             flex-wrap: nowrap;
             overflow-x: auto;
+            padding: 0 2px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+          }
+          
+          .style-button {
+            width: 28px;
+            height: 28px;
+            font-size: 0.75rem;
+            min-width: 28px;
+            flex-shrink: 0;
+            margin: 0 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .controls {
+            bottom: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 4px 6px;
+            width: calc(100vw - 12px);
+            max-width: 100%;
+            min-width: 0;
+          }
+          
+          .button-grid {
+            gap: 2px;
+            justify-content: space-between;
+            flex-wrap: nowrap;
+            overflow-x: auto;
             padding: 0 1px;
             width: 100%;
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
+            display: flex;
             align-items: center;
           }
           
           .style-button {
             width: 24px;
             height: 24px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             min-width: 24px;
             flex-shrink: 0;
-            justify-self: center;
+            margin: 0 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
           }
         }
       `}</style>

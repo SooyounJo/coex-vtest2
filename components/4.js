@@ -2,7 +2,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 
-export default function ShaderBubble5() {
+export default function ShaderBubble4() {
   const material = useMemo(() => new THREE.ShaderMaterial({
     uniforms: {
       time: { value: 0 },
@@ -153,9 +153,9 @@ export default function ShaderBubble5() {
 
         float topness = clamp(dot(N, normalize(ringDir)) * 0.5 + 0.5, 0.0, 1.0);
 
-        vec3 peach = vec3(1.00, 0.90, 0.72);
-        vec3 pink  = vec3(1.00, 0.70, 0.90);
-        vec3 purple= vec3(0.82, 0.68, 1.00);
+        vec3 peach = vec3(1.00, 0.95, 0.80);
+        vec3 pink  = vec3(1.00, 0.80, 0.95);
+        vec3 purple= vec3(0.90, 0.75, 1.00);
         vec3 base = mix(pink, peach, clamp(0.5 + 0.5*topness, 0.0, 1.0));
         base = mix(base, purple, smoothstep(0.0, 0.35, 1.0 - topness));
 
@@ -201,9 +201,9 @@ export default function ShaderBubble5() {
         w1 *= wobble1; w2 *= wobble2; w3 *= wobble3;
 
         // 오션 블루 색상 팔레트 (2번 스타일과 동일)
-        vec3 cY = vec3(0.40, 0.80, 1.00);  // 오션 블루
-        vec3 cP = vec3(0.20, 0.60, 0.90);  // 딥 블루
-        vec3 cU = vec3(0.10, 0.40, 0.80);  // 다크 블루
+        vec3 cY = vec3(0.60, 0.90, 1.00);  // 밝은 오션 블루
+        vec3 cP = vec3(0.40, 0.70, 1.00);  // 중간 블루
+        vec3 cU = vec3(0.20, 0.50, 0.90);  // 딥 블루
 
         w1 *= vec3(0.18, 1.0, 0.95);
         w2 *= vec3(0.18, 1.0, 0.95);
@@ -244,8 +244,8 @@ export default function ShaderBubble5() {
         lit = clamp(lit, 0.0, 1.1);
 
         float edgeFeather = smoothstep(0.52, 0.36, r);
-        float alpha = 0.80 * edgeFeather + fres*0.10;
-        alpha = clamp(alpha, 0.0, 0.96);
+        float alpha = 0.95 * edgeFeather + fres*0.15;
+        alpha = clamp(alpha, 0.7, 1.0);
 
         gl_FragColor = vec4(lit, alpha);
       }
@@ -261,7 +261,7 @@ export default function ShaderBubble5() {
   const { camera, viewport } = useThree()
   const v = viewport.getCurrentViewport(camera, [0, 0, 0])
 
-  const radius = Math.min(v.width, v.height) * (window.innerWidth <= 768 ? 0.55 : 0.33) // 모바일: 55%로 증가
+  const radius = Math.min(v.width, v.height) * (window.innerWidth <= 768 ? 0.6 : 0.33) // 모바일: 60%로 증가 (좌우, 하단 5%씩 잘림)
   const margin = v.height * 0.035
   const yBottom = window.innerWidth <= 768 ? 
     -v.height / 2 + radius + margin + v.height * 0.05 : // 모바일: 중앙보다 5% 아래 (더 위로)

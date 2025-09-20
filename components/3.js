@@ -2,7 +2,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 
-export default function ShaderBubble4() {
+export default function ShaderBubble3() {
   const material = useMemo(() => new THREE.ShaderMaterial({
     uniforms: {
       time: { value: 0 },
@@ -211,7 +211,7 @@ export default function ShaderBubble4() {
   const { camera, viewport } = useThree()
   const v = viewport.getCurrentViewport(camera, [0, 0, 0])
 
-  const radius = Math.min(v.width, v.height) * (window.innerWidth <= 768 ? 0.55 : 0.33) // 모바일: 55%로 증가
+  const radius = Math.min(v.width, v.height) * (window.innerWidth <= 768 ? 0.6 : 0.33) // 모바일: 60%로 증가 (좌우, 하단 5%씩 잘림)
   const margin = v.height * 0.035
   const yBottom = window.innerWidth <= 768 ? 
     -v.height / 2 + radius + margin + v.height * 0.05 : // 모바일: 중앙보다 5% 아래 (더 위로)
