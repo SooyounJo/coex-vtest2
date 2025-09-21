@@ -135,10 +135,10 @@ export default function GooeyPage() {
         }
 
         .style-button {
-          width: 40px;
+          width: 50px;
           height: 40px;
           border: none;
-          border-radius: 50%;
+          border-radius: 8px;
           background: rgba(255, 255, 255, 0.2);
           backdrop-filter: blur(10px) saturate(180%);
           color: #333;
@@ -154,7 +154,6 @@ export default function GooeyPage() {
 
         .style-button:hover {
           background: rgba(255, 255, 255, 0.3);
-          transform: translateY(-2px);
           box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
 
@@ -172,14 +171,50 @@ export default function GooeyPage() {
             bottom: 8px;
             left: 50%;
             transform: translateX(-50%);
-            padding: 16px 12px;
+            padding: 14px 16px;
+            width: calc(100vw - 20px);
+            max-width: 100%;
+            min-width: 0;
+          }
+          
+          .button-grid {
+            gap: 8px;
+            justify-content: space-between;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            padding: 0 4px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+          }
+          
+          .style-button {
+            width: 44px;
+            height: 36px;
+            font-size: 0.9rem;
+            min-width: 44px;
+            flex-shrink: 0;
+            margin: 0 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .controls {
+            bottom: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 14px;
             width: calc(100vw - 16px);
             max-width: 100%;
             min-width: 0;
           }
           
           .button-grid {
-            gap: 3px;
+            gap: 6px;
             justify-content: space-between;
             flex-wrap: nowrap;
             overflow-x: auto;
@@ -190,50 +225,16 @@ export default function GooeyPage() {
           }
           
           .style-button {
-            width: 28px;
-            height: 28px;
-            font-size: 0.75rem;
-            min-width: 28px;
+            width: 40px;
+            height: 32px;
+            font-size: 0.8rem;
+            min-width: 40px;
             flex-shrink: 0;
             margin: 0 1px;
             display: flex;
             align-items: center;
             justify-content: center;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .controls {
-            bottom: 6px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 14px 10px;
-            width: calc(100vw - 12px);
-            max-width: 100%;
-            min-width: 0;
-          }
-          
-          .button-grid {
-            gap: 2px;
-            justify-content: space-between;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            padding: 0 1px;
-            width: 100%;
-            display: flex;
-            align-items: center;
-          }
-          
-          .style-button {
-            width: 24px;
-            height: 24px;
-            font-size: 0.7rem;
-            min-width: 24px;
-            flex-shrink: 0;
-            margin: 0 0.5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            border-radius: 5px;
           }
         }
       `}</style>
