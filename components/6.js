@@ -1,381 +1,216 @@
-import { useEffect, useRef, useState } from 'react'
+import { useFrame, useThree } from '@react-three/fiber'
+import { useMemo, useRef } from 'react'
+import * as THREE from 'three'
 
-export default function GooeyShader() {
-  const containerRef = useRef(null)
-  const [isAbsorbed, setIsAbsorbed] = useState(false)
-  const [isAutoMode, setIsAutoMode] = useState(true)
-  const autoModeRef = useRef(true)
-  const lastClickTime = useRef(0)
-
-  useEffect(() => {
-    const parent = containerRef.current
-    if (!parent) return
-
-    // 기존 동적으로 생성된 원들 제거
-    const existingCircles = parent.querySelectorAll('.circle')
-    existingCircles.forEach(circle => circle.remove())
-
-    // 29개의 원 생성 (원본 Gooey Effect와 동일)
-    for (let i = 1; i < 30; i++) {
-      const newDIV = document.createElement("div")
-      newDIV.classList.add('circle')
-      newDIV.classList.add('groom-' + i)
-      
-      // 원본 코드와 동일한 방식으로 랜덤 값 생성
-      const initX = (Math.random() * window.innerWidth) - (window.innerWidth / 2)
-      const initY = (Math.random() * window.innerHeight) - (window.innerHeight / 2)
-      const actionX = (Math.random() * window.innerWidth) - (window.innerWidth / 2)
-      const actionY = (Math.random() * window.innerHeight) - (window.innerHeight / 2)
-      const circleSize = window.innerWidth <= 768 ? 
-        Math.random() * 50 + 15 : 
-        Math.random() * 80 + 20
-      const time = Math.random() * 15 + 8 // 더 느린 애니메이션
-      
-      newDIV.style.position = 'absolute'
-      newDIV.style.width = `${circleSize}px`
-      newDIV.style.height = `${circleSize}px`
-      newDIV.style.transform = `translate(${initX}px, ${initY}px)`
-      newDIV.style.borderRadius = '50%'
-      newDIV.style.border = '1px solid black'
-      newDIV.style.background = 'black'
-      newDIV.style.animation = `groom-${i} ${time}s infinite alternate`
-      
-      // 동적 키프레임 생성 (흡수/확산 애니메이션 포함)
-      const style = document.createElement('style')
-      style.textContent = `
-        @keyframes groom-${i} {
-          50% {
-            transform: translate(${actionX}px, ${actionY}px);
-          }
-        }
-        @keyframes absorb-${i} {
-          0% {
-            transform: translate(${initX}px, ${initY}px);
-          }
-          100% {
-            transform: translate(0px, 0px);
-          }
-        }
-        @keyframes expand-${i} {
-          0% {
-            transform: translate(0px, 0px);
-          }
-          100% {
-            transform: translate(${initX}px, ${initY}px);
-          }
-        }
-      `
-      document.head.appendChild(style)
-      
-      parent.appendChild(newDIV)
-    }
-
-    console.log('Gooey circles created:', parent.children.length)
-  }, [])
-
-  // 자동 모드 애니메이션
-  useEffect(() => {
-    const autoAnimate = () => {
-      if (!autoModeRef.current) return
-      
-      const circles = document.querySelectorAll('.circle')
-      const centerCircle = document.querySelector('.center-circle')
-      
-      if (circles.length === 0) return
-      
-      // 랜덤하게 모이거나 흩어지기
-      const shouldAbsorb = Math.random() > 0.5
-      
-      if (shouldAbsorb) {
-        // 흡수 애니메이션
-        circles.forEach((circle, index) => {
-          const circleClass = circle.classList[1]
-          circle.style.animation = `absorb-${circleClass.split('-')[1]} 2.0s ease-in-out forwards`
-        })
-        
-        centerCircle.style.animation = 'pulse 2.0s ease-in-out'
-        setIsAbsorbed(true)
-      } else {
-        // 확산 애니메이션
-        circles.forEach((circle, index) => {
-          const circleClass = circle.classList[1]
-          circle.style.animation = `expand-${circleClass.split('-')[1]} 2.0s ease-in-out forwards`
-        })
-        
-        centerCircle.style.animation = 'none'
-        setIsAbsorbed(false)
+export default function AgenticBubble({ styleType = 6 }) {
+  const material = useMemo(() => new THREE.ShaderMaterial({
+    uniforms: {
+      time: { value: 0 },
+      lightDir: { value: new THREE.Vector3(0.2, 0.9, 0.3).normalize() },
+      ringDir: { value: new THREE.Vector3(0.08, 0.56, 0.86).normalize() },
+    },
+    vertexShader: `
+      varying vec2 vUv;
+      varying vec3 vNormal;
+      varying vec3 vWorldPos;
+      void main() {
+        vUv = uv;
+        vNormal = normalize(normalMatrix * normal);
+        vec4 worldPos = modelMatrix * vec4(position, 1.0);
+        vWorldPos = worldPos.xyz;
+        gl_Position = projectionMatrix * viewMatrix * worldPos;
       }
-    }
+    `,
+    fragmentShader: `
+      precision highp float;
+      uniform float time;
+      uniform vec3 lightDir;
+      uniform vec3 ringDir;
+      varying vec2 vUv;
+      varying vec3 vNormal;
 
-    // 3-6초마다 자동 애니메이션
-    const interval = setInterval(autoAnimate, Math.random() * 3000 + 3000)
-    
-    return () => clearInterval(interval)
-  }, [])
+      float hash(vec2 p){
+        p = fract(p*vec2(123.34, 345.45));
+        p += dot(p, p+34.345);
+        return fract(p.x*p.y);
+      }
+      float n2(vec2 p){
+        vec2 i = floor(p);
+        vec2 f = fract(p);
+        float a = hash(i);
+        float b = hash(i+vec2(1.0,0.0));
+        float c = hash(i+vec2(0.0,1.0));
+        float d = hash(i+vec2(1.0,1.0));
+        vec2 u = f*f*(3.0-2.0*f);
+        return mix(mix(a,b,u.x), mix(c,d,u.x), u.y);
+      }
 
-  const handleTouch = () => {
-    const currentTime = Date.now()
-    lastClickTime.current = currentTime
-    
-    // 클릭 시 자동 모드 일시 중지
-    autoModeRef.current = false
-    setIsAutoMode(false)
-    
-    const circles = document.querySelectorAll('.circle')
-    const centerCircle = document.querySelector('.center-circle')
-    
-    if (!isAbsorbed) {
-      // 흡수 애니메이션 (더 느리게)
-      circles.forEach((circle, index) => {
-        const circleClass = circle.classList[1] // groom-1, groom-2 등
-        circle.style.animation = `absorb-${circleClass.split('-')[1]} 1.5s ease-in-out forwards`
-      })
-      
-      // 중앙 원 확대
-      centerCircle.style.animation = 'pulse 1.5s ease-in-out'
-      
-      setIsAbsorbed(true)
-    } else {
-      // 확산 애니메이션 (더 느리게)
-      circles.forEach((circle, index) => {
-        const circleClass = circle.classList[1]
-        circle.style.animation = `expand-${circleClass.split('-')[1]} 1.5s ease-in-out forwards`
-      })
-      
-      // 중앙 원 원래대로
-      centerCircle.style.animation = 'none'
-      
-      setIsAbsorbed(false)
-    }
-    
-    // 5초 후 자동 모드 재개
-    setTimeout(() => {
-      autoModeRef.current = true
-      setIsAutoMode(true)
-    }, 5000)
-  }
+      // 일렁이는 빛을 위한 노이즈 함수
+      float noise(vec2 p) {
+        return sin(p.x) * cos(p.y) + sin(p.x * 2.0) * cos(p.y * 2.0) * 0.5;
+      }
+
+      // 일레스틱 효과를 위한 웨이브 함수
+      float elasticWave(float x, float frequency, float amplitude) {
+        float wave = sin(x * frequency) * amplitude;
+        float decay = exp(-x * 0.05); // 더 천천히 감쇠
+        float bounce = sin(x * frequency * 2.0) * amplitude * 0.3; // 바운스 효과
+        return (wave + bounce) * decay;
+      }
+
+      // 숨 쉬듯이 늘어났다 줄어드는 모션
+      float breathingMotion(float time) {
+        float slowBreath = sin(time * 0.3) * 0.15; // 천천히 숨쉬는 느낌
+        float fastBreath = sin(time * 0.8) * 0.08; // 빠른 숨쉬는 느낌
+        float deepBreath = sin(time * 0.15) * 0.25; // 깊은 숨쉬는 느낌
+        return slowBreath + fastBreath + deepBreath;
+      }
+
+      float bumpMove(float center, float width, float f) {
+        float d0 = abs(f - (center - 1.0));
+        float d1 = abs(f - center);
+        float d2 = abs(f - (center + 1.0));
+        float d  = min(d0, min(d1, d2));
+        float aa = fwidth(f) * 1.2; // 부드러운 변화
+        return smoothstep(width + aa, 0.0 + aa, d);
+      }
+
+      vec3 bandWeights(float f) {
+        float width = 0.25; // 부드러운 색상 변화
+        float y = bumpMove(0.18, width, f);
+        float p = bumpMove(0.52, width, f);
+        float u = bumpMove(0.86, width, f);
+        return vec3(y, p, u);
+      }
+
+      void main() {
+        vec3 N = normalize(vNormal);
+        vec3 L = normalize(lightDir);
+        float lambert = max(dot(N, L), 0.0);
+
+        vec2 p = vUv - 0.5;
+        float r = length(p);
+
+        // 숨 쉬듯이 늘어났다 줄어드는 모션 적용
+        float breathing = breathingMotion(time);
+        r = r * (1.0 + breathing * 0.3); // 반지름이 숨쉬듯이 변화
+
+        float topness = clamp(dot(N, normalize(ringDir)) * 0.5 + 0.5, 0.0, 1.0);
+
+        vec3 peach = vec3(1.00, 0.90, 0.72);
+        vec3 pink  = vec3(1.00, 0.70, 0.90);
+        vec3 purple= vec3(0.82, 0.68, 1.00);
+        vec3 base = mix(pink, peach, clamp(0.5 + 0.5*topness, 0.0, 1.0));
+        base = mix(base, purple, smoothstep(0.0, 0.35, 1.0 - topness));
+
+        float speed = 0.10;
+        float scale = 1.8;
+        float loopSec = 10.0;
+        float loopT   = mod(time, loopSec) / loopSec;
+        float phase = -loopT;
+        
+        // 일렁이는 빛 효과 (약화)
+        float ripple1 = noise(vUv * 3.0 + time * 0.5) * 0.05; // 0.1 → 0.05
+        float ripple2 = noise(vUv * 5.0 + time * 0.3) * 0.025; // 0.05 → 0.025
+        float ripple3 = noise(vUv * 7.0 + time * 0.7) * 0.015; // 0.03 → 0.015
+        float totalRipple = ripple1 + ripple2 + ripple3;
+        
+        // 일레스틱 웨이브 효과 (약화)
+        float elastic1 = elasticWave(topness * 2.0 + time * 0.4, 3.0, 0.08); // 0.15 → 0.08
+        float elastic2 = elasticWave(topness * 3.0 + time * 0.6, 2.0, 0.04); // 0.08 → 0.04
+        float totalElastic = elastic1 + elastic2;
+        
+        // 블러 효과 (약화)
+        float blurAmount = 0.01; // 0.02 → 0.01
+        float f1 = topness * scale + phase + totalRipple + totalElastic;
+        float f2 = topness * scale + phase + blurAmount + totalRipple * 0.8 + totalElastic * 0.6;
+        float f3 = topness * scale + phase + (blurAmount * 1.5) + totalRipple * 0.6 + totalElastic * 0.4;
+
+        float perturb = 0.01 * n2(vUv*1.5 + time*0.05); // 0.02 → 0.01
+        vec3 w1 = bandWeights(f1 + perturb);
+        vec3 w2 = bandWeights(f2 + perturb*0.8);
+        vec3 w3 = bandWeights(f3 + perturb*0.6);
+
+        float wobble1 = 0.997 + 0.001*n2(vUv*2.2 + time*0.06); // 0.003 → 0.001
+        float wobble2 = 0.997 + 0.001*n2(vUv*2.2 + time*0.06 + 1.7);
+        float wobble3 = 0.997 + 0.001*n2(vUv*2.2 + time*0.06 + 3.1);
+        w1 *= wobble1; w2 *= wobble2; w3 *= wobble3;
+
+        // 고채도 핑크 색상 팔레트 (대비 약화)
+        vec3 cY = vec3(0.80, 0.40, 0.70);  // 네온핑크 (대비 약화)
+        vec3 cP = vec3(0.85, 0.20, 0.75);  // 마젠타 (대비 약화)
+        vec3 cU = vec3(0.90, 0.50, 0.80);  // 바이브런트핑크 (대비 약화)
+
+        w1 *= vec3(0.18, 1.0, 0.95);
+        w2 *= vec3(0.18, 1.0, 0.95);
+        w3 *= vec3(0.18, 1.0, 0.95);
+
+        vec3 flowColor1 = cY * w1.x + cP * w1.y + cU * w1.z;
+        vec3 flowColor2 = cY * w2.x + cP * w2.y + cU * w2.z;
+        vec3 flowColor3 = cY * w3.x + cP * w3.y + cU * w3.z;
+        vec3 flowColor  = (0.5*flowColor1 + 0.35*flowColor2 + 0.15*flowColor3);
+
+        float mask1 = clamp(w1.x + w1.y + w1.z, 0.0, 1.0);
+        float mask2 = clamp(w2.x + w2.y + w2.z, 0.0, 1.0);
+        float mask3 = clamp(w3.x + w3.y + w3.z, 0.0, 1.0);
+        float flowMaskAvg = clamp((0.5*mask1 + 0.35*mask2 + 0.15*mask3), 0.0, 1.0);
+
+        vec3 lit = base;
+        // 부드러운 색상 혼합으로 대비 줄이기 (더 약하게)
+        lit = mix(lit, flowColor, flowMaskAvg * 0.4); // 0.8 → 0.4
+        
+        // 일렁이는 빛 효과 적용 (대비 약화)
+        vec3 rippleColor = vec3(0.8, 0.4, 0.6) * totalRipple * 0.2; // 대비 약화
+        vec3 elasticColor = vec3(0.8, 0.3, 0.7) * totalElastic * 0.15; // 대비 약화
+        lit += rippleColor + elasticColor;
+
+        vec3 V = vec3(0.0, 0.0, 1.0);
+        float fres = pow(1.0 - max(dot(N, V), 0.0), 2.6);
+        vec3 rimGlow = vec3(0.8, 0.3, 0.7) * fres * 0.3; // 대비 약화
+        float softHalo = smoothstep(0.34, 0.10, r) * 0.08; // 0.13 → 0.08
+        vec3 glow = rimGlow + vec3(0.8, 0.4, 0.8) * softHalo; // 대비 약화
+        lit += glow;
+
+        lit += vec3(0.8, 0.2, 0.6) * (1.0 - topness) * 0.1; // 대비 약화
+
+        vec3 gray = vec3(dot(lit, vec3(0.299, 0.587, 0.114)));
+        lit = mix(gray, lit, 1.4); // 채도 약화 (2.2 → 1.4)
+        lit = pow(lit, vec3(0.9)); // 감마 조정으로 더 부드럽게 (0.85 → 0.9)
+        lit *= 1.05; // 노출 약화 (1.15 → 1.05)
+        lit = mix(lit, vec3(1.0), 0.02); // 0.05 → 0.02
+        lit = clamp(lit, 0.0, 1.0); // 1.1 → 1.0
+
+        float edgeFeather = smoothstep(0.52, 0.36, r);
+        float alpha = 0.80 * edgeFeather + fres*0.10;
+        alpha = clamp(alpha, 0.0, 0.96);
+
+        gl_FragColor = vec4(lit, alpha);
+      }
+    `,
+    transparent: true,
+  }), [])
+
+  useFrame((state, delta) => {
+    material.uniforms.time.value += delta
+  })
+
+  const meshRef = useRef()
+  const { camera, viewport } = useThree()
+  const v = viewport.getCurrentViewport(camera, [0, 0, 0])
+
+  const radius = Math.min(v.width, v.height) * (window.innerWidth <= 768 ? 0.6 : 0.33) // 모바일: 60%로 증가 (좌우, 하단 5%씩 잘림)
+  const margin = v.height * 0.035
+  const yBottom = window.innerWidth <= 768 ? 
+    -v.height / 2 + radius + margin + v.height * 0.05 : // 모바일: 중앙보다 5% 아래 (더 위로)
+    -v.height / 2 + radius + margin // 데스크톱: 기존 위치
 
   return (
-    <div className="gooey-container" onClick={handleTouch}>
-      <div className="frame">
-        <div className="center">
-          <div className="groom-wrap" ref={containerRef}>
-            <div className="center-circle"></div>
-            {/* 형제를 js에서 생성 */}
-          </div>
-        </div>
-      </div>
-
-      <style jsx>{`
-        .gooey-container {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 2;
-          pointer-events: auto;
-          cursor: pointer;
-        }
-
-        .frame {
-          position: relative;
-          width: 100vw;
-          height: 100vh;
-          overflow: hidden;
-          background: white;
-        }
-
-        .center {
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%,-50%);
-        }
-
-        .groom-wrap {
-          width: 100vw;
-          height: 100vh;
-          display: flex;
-          background: white;
-          justify-content: center;
-          align-items: center;
-          filter: blur(10px) contrast(10);
-          position: relative;
-          animation: rotate 20s infinite linear;
-          backdrop-filter: blur(20px) saturate(1.8);
-          -webkit-backdrop-filter: blur(20px) saturate(1.8);
-        }
-
-        .center-circle {
-          width: 200px;
-          height: 200px;
-          border: 2px solid rgba(255, 255, 255, 0.3);
-          background: linear-gradient(135deg, 
-            rgba(200, 180, 200, 0.8), 
-            rgba(180, 160, 180, 0.7),
-            rgba(220, 200, 220, 0.9));
-          border-radius: 50%;
-          backdrop-filter: blur(20px) saturate(1.8);
-          -webkit-backdrop-filter: blur(20px) saturate(1.8);
-          box-shadow: 
-            0 12px 40px rgba(200, 180, 200, 0.3),
-            inset 0 2px 0 rgba(255, 255, 255, 0.2),
-            0 0 30px rgba(200, 180, 200, 0.2);
-          position: relative;
-          overflow: hidden;
-        }
-
-        .center-circle::before {
-          content: '';
-          position: absolute;
-          top: -8px;
-          left: -8px;
-          right: -8px;
-          bottom: -8px;
-          background: conic-gradient(
-            from 0deg,
-            rgba(255, 100, 200, 0.4),
-            rgba(100, 200, 255, 0.4),
-            rgba(200, 255, 100, 0.4),
-            rgba(255, 200, 100, 0.4),
-            rgba(255, 100, 200, 0.4)
-          );
-          border-radius: 50%;
-          animation: chromaticRotate 12s linear infinite;
-          z-index: -1;
-          filter: blur(2px);
-        }
-
-        .center-circle::after {
-          content: '';
-          position: absolute;
-          top: 20%;
-          left: 20%;
-          width: 30%;
-          height: 30%;
-          background: radial-gradient(
-            circle,
-            rgba(255, 255, 255, 0.2) 0%,
-            transparent 70%
-          );
-          border-radius: 50%;
-          animation: shimmer 3s ease-in-out infinite;
-        }
-
-        @media (max-width: 768px) {
-          .center-circle {
-            width: 120px;
-            height: 120px;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .center-circle {
-            width: 100px;
-            height: 100px;
-          }
-        }
-
-        .circle {
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          background: linear-gradient(135deg, 
-            rgba(200, 180, 200, 0.7), 
-            rgba(180, 160, 180, 0.6),
-            rgba(220, 200, 220, 0.8));
-          border-radius: 50%;
-          backdrop-filter: blur(15px) saturate(1.6);
-          -webkit-backdrop-filter: blur(15px) saturate(1.6);
-          box-shadow: 
-            0 6px 20px rgba(200, 180, 200, 0.2),
-            inset 0 1px 0 rgba(255, 255, 255, 0.15),
-            0 0 15px rgba(200, 180, 200, 0.15);
-          position: relative;
-          overflow: hidden;
-        }
-
-        .circle::before {
-          content: '';
-          position: absolute;
-          top: -6px;
-          left: -6px;
-          right: -6px;
-          bottom: -6px;
-          background: conic-gradient(
-            from 0deg,
-            rgba(255, 100, 200, 0.3),
-            rgba(100, 200, 255, 0.3),
-            rgba(200, 255, 100, 0.3),
-            rgba(255, 200, 100, 0.3),
-            rgba(255, 100, 200, 0.3)
-          );
-          border-radius: 50%;
-          animation: chromaticRotate 10s linear infinite;
-          z-index: -1;
-          filter: blur(1px);
-        }
-
-        .circle::after {
-          content: '';
-          position: absolute;
-          top: 25%;
-          left: 25%;
-          width: 20%;
-          height: 20%;
-          background: radial-gradient(
-            circle,
-            rgba(255, 255, 255, 0.1) 0%,
-            transparent 70%
-          );
-          border-radius: 50%;
-          animation: shimmer 4s ease-in-out infinite;
-        }
-
-        @keyframes rotate {
-          0% {
-            transform: rotate(0);
-          }
-          100% {
-            transform: rotate(360deg);
-          }
-        }
-
-        @keyframes pulse {
-          0% {
-            transform: scale(1);
-          }
-          50% {
-            transform: scale(1.2);
-          }
-          100% {
-            transform: scale(1);
-          }
-        }
-
-        @keyframes chromaticRotate {
-          0% {
-            transform: rotate(0deg);
-          }
-          100% {
-            transform: rotate(360deg);
-          }
-        }
-
-        @keyframes shimmer {
-          0%, 100% {
-            opacity: 0.3;
-            transform: scale(1);
-          }
-          50% {
-            opacity: 0.8;
-            transform: scale(1.1);
-          }
-        }
-
-      `}</style>
-    </div>
+    <>
+      {/* 메인 구 */}
+      <mesh ref={meshRef} position={[0, yBottom, 0]}>
+        <sphereGeometry args={[radius, 256, 256]} />
+        <primitive object={material} attach="material" />
+      </mesh>
+    </>
   )
 }

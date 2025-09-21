@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import Head from 'next/head'
-import GooeyShader from '../components/6'
+import GooeyShader from '../components/8'
 
 export default function GooeyPage() {
 

@@ -6,7 +6,8 @@ import ShaderBubble2 from '../components/2'
 import ShaderBubble3 from '../components/3'
 import ShaderBubble4 from '../components/4'
 import ShaderBubble5 from '../components/5'
-import AgenticBubble from '../components/7'
+import AgenticBubble from '../components/6'
+import SharpBubble from '../components/7'
 import { useRouter } from 'next/router'
 
 export default function Home() {
@@ -14,11 +15,11 @@ export default function Home() {
   const router = useRouter()
 
   const handleStyleChange = (style) => {
-    if (style === 6) {
+    if (style === 8) {
       router.push('/gooey')
-    } else {
-      setSelectedStyle(style)
+      return
     }
+    setSelectedStyle(style)
   }
 
   return (
@@ -48,11 +49,12 @@ export default function Home() {
              selectedStyle === 3 ? <ShaderBubble3 /> : 
              selectedStyle === 4 ? <ShaderBubble4 /> : 
             selectedStyle === 5 ? <ShaderBubble5 /> : 
-            selectedStyle === 7 ? <AgenticBubble styleType={7} /> :
+            selectedStyle === 6 ? <AgenticBubble styleType={6} /> :
+            selectedStyle === 7 ? <SharpBubble styleType={7} /> :
             <ShaderBubble styleType={selectedStyle} />}
           </Canvas>
           
-        {/* 6번 버튼은 별도 페이지로 이동 */}
+        {/* 8번 버튼은 별도 페이지로 이동 */}
           
           {/* 버튼별 제목 표시 */}
           {selectedStyle === 1 && (
@@ -80,9 +82,14 @@ export default function Home() {
               <h1 className="style-title">Glossy Wave</h1>
             </div>
           )}
+          {selectedStyle === 6 && (
+            <div className="title-overlay">
+              <h1 className="style-title">Smooth Glow</h1>
+            </div>
+          )}
           {selectedStyle === 7 && (
             <div className="title-overlay">
-              <h1 className="style-title">Agentic Glow</h1>
+              <h1 className="style-title">Sharp Glow</h1>
             </div>
           )}
         </div>
@@ -90,7 +97,7 @@ export default function Home() {
         {/* 버튼 컨트롤 */}
         <div className="controls">
           <div className="button-grid">
-            {[1, 2, 3, 4, 5, 6, 7].map((num) => (
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
               <button
                 key={num}
                 className={`style-button ${selectedStyle === num ? 'active' : ''}`}
@@ -127,109 +134,86 @@ export default function Home() {
         .style-title {
           color: #ffb6c1;
           font-family: 'Poppins', sans-serif;
-          font-size: 1.8rem;
           font-weight: 300;
+          font-size: 2.5rem;
           margin: 0;
           text-align: center;
-          letter-spacing: 0.1em;
-        }
-
-
-        .r3f-canvas {
-          width: 100%;
-          height: 100%;
-          display: block;
         }
 
         .controls {
-          position: absolute;
-          bottom: 30px;
+          position: fixed;
+          bottom: 20px;
           left: 50%;
           transform: translateX(-50%);
-          background: rgba(255, 255, 255, 0.15);
-          backdrop-filter: blur(20px) saturate(1.8);
+          background: rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(10px) saturate(180%);
           border: 1px solid rgba(255, 255, 255, 0.2);
-          border-radius: 25px;
-          padding: 20px 30px;
-          box-shadow: 
-            0 12px 40px rgba(0, 0, 0, 0.1),
-            inset 0 1px 0 rgba(255, 255, 255, 0.3),
-            0 0 20px rgba(255, 255, 255, 0.1);
+          border-radius: 20px;
+          padding: 10px 15px;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
           z-index: 10;
-          -webkit-backdrop-filter: blur(20px) saturate(1.8);
         }
 
         .button-grid {
           display: flex;
-          gap: 15px;
+          gap: 8px;
           align-items: center;
         }
 
         .style-button {
-          width: 50px;
-          height: 50px;
+          width: 40px;
+          height: 40px;
           border: none;
           border-radius: 50%;
           background: rgba(255, 255, 255, 0.2);
-          backdrop-filter: blur(15px) saturate(1.5);
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          color: rgba(255, 255, 255, 0.95);
-          font-size: 1.2rem;
-          font-weight: 600;
+          backdrop-filter: blur(10px) saturate(180%);
+          color: #333;
+          font-size: 1rem;
+          font-weight: 500;
           cursor: pointer;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          transition: all 0.3s ease;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 
-            0 6px 20px rgba(0, 0, 0, 0.1),
-            inset 0 1px 0 rgba(255, 255, 255, 0.3),
-            0 0 15px rgba(255, 255, 255, 0.1);
-          -webkit-backdrop-filter: blur(15px) saturate(1.5);
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .style-button:hover {
-          background: rgba(255, 255, 255, 0.4);
-          transform: translateY(-3px) scale(1.05);
-          box-shadow: 
-            0 10px 30px rgba(0, 0, 0, 0.2),
-            inset 0 1px 0 rgba(255, 255, 255, 0.6),
-            0 0 25px rgba(255, 255, 255, 0.2);
+          background: rgba(255, 255, 255, 0.3);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
 
         .style-button.active {
-          background: linear-gradient(135deg, 
-            rgba(255, 20, 147, 0.9), 
-            rgba(219, 112, 147, 0.9));
-          color: white;
-          transform: translateY(-3px) scale(1.1);
-          box-shadow: 
-            0 15px 40px rgba(255, 20, 147, 0.5),
-            inset 0 1px 0 rgba(255, 255, 255, 0.5),
-            0 0 30px rgba(255, 20, 147, 0.3);
-          border: 1px solid rgba(255, 20, 147, 0.6);
+          background: rgba(255, 182, 193, 0.8);
+          color: #fff;
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(255, 182, 193, 0.4);
         }
 
+        .r3f-canvas {
+          width: 100% !important;
+          height: 100% !important;
+        }
+
+        /* 모바일 반응형 */
         @media (max-width: 768px) {
           .app-container {
-            height: 100vh;
-            overflow: hidden;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
           }
-
+          
           .canvas-container {
             flex: 1;
             width: 100%;
-            height: calc(100vh - 90px);
-            margin-bottom: 0;
+            height: 100%;
           }
-
+          
           .controls {
             position: fixed;
-            bottom: 8px;
+            bottom: 10px;
             left: 50%;
             transform: translateX(-50%);
             padding: 6px 8px;
@@ -260,39 +244,15 @@ export default function Home() {
             align-items: center;
             justify-content: center;
           }
-
-          .title-overlay {
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            z-index: 5;
-          }
-
+          
           .style-title {
-            font-size: 1.2rem;
+            font-size: 1.8rem;
+            top: 30px;
           }
         }
 
         @media (max-width: 480px) {
-          .app-container {
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-          }
-
-          .canvas-container {
-            flex: 1;
-            width: 100%;
-            height: calc(100vh - 80px);
-            margin-bottom: 0;
-          }
-
           .controls {
-            position: fixed;
             bottom: 6px;
             left: 50%;
             transform: translateX(-50%);
@@ -324,17 +284,10 @@ export default function Home() {
             align-items: center;
             justify-content: center;
           }
-
-          .title-overlay {
-            top: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 90%;
-            z-index: 5;
-          }
-
+          
           .style-title {
-            font-size: 1rem;
+            font-size: 1.5rem;
+            top: 20px;
           }
         }
       `}</style>
