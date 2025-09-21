@@ -172,7 +172,7 @@ export default function GooeyPage() {
             bottom: 8px;
             left: 50%;
             transform: translateX(-50%);
-            padding: 10px 12px;
+            padding: 16px 12px;
             width: calc(100vw - 16px);
             max-width: 100%;
             min-width: 0;
@@ -207,7 +207,7 @@ export default function GooeyPage() {
             bottom: 6px;
             left: 50%;
             transform: translateX(-50%);
-            padding: 8px 10px;
+            padding: 14px 10px;
             width: calc(100vw - 12px);
             max-width: 100%;
             min-width: 0;
