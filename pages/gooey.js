@@ -26,17 +26,13 @@ export default function GooeyPage() {
         {/* 버튼 컨트롤 */}
         <div className="controls">
           <div className="button-grid">
-            {[1, 2, 3, 4, 5, 6, 7].map((num) => (
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
               <button
                 key={num}
-                className={`style-button ${num === 6 ? 'active' : ''}`}
+                className={`style-button ${num === 8 ? 'active' : ''}`}
                 onClick={() => {
-                  if (num === 6) return; // 6번은 현재 페이지
-                  if (num === 7) {
-                    window.location.href = '/?style=7';
-                  } else {
-                    window.location.href = `/?style=${num}`;
-                  }
+                  if (num === 8) return; // 8번은 현재 페이지
+                  window.location.href = `/?style=${num}`;
                 }}
               >
                 {num}
@@ -123,67 +119,48 @@ export default function GooeyPage() {
           bottom: 20px;
           left: 50%;
           transform: translateX(-50%);
-          background: rgba(255, 255, 255, 0.15);
-          backdrop-filter: blur(20px) saturate(1.8);
+          background: rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(10px) saturate(180%);
           border: 1px solid rgba(255, 255, 255, 0.2);
-          border-radius: 25px;
-          padding: 15px 25px;
-          box-shadow: 
-            0 12px 40px rgba(0, 0, 0, 0.1),
-            inset 0 1px 0 rgba(255, 255, 255, 0.3),
-            0 0 20px rgba(255, 255, 255, 0.1);
+          border-radius: 20px;
+          padding: 10px 15px;
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
           z-index: 10;
-          -webkit-backdrop-filter: blur(20px) saturate(1.8);
         }
 
         .button-grid {
           display: flex;
-          gap: 15px;
+          gap: 8px;
           align-items: center;
         }
 
         .style-button {
-          width: 50px;
-          height: 50px;
+          width: 40px;
+          height: 40px;
           border: none;
           border-radius: 50%;
           background: rgba(255, 255, 255, 0.2);
-          backdrop-filter: blur(15px) saturate(1.5);
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          color: rgba(255, 255, 255, 0.95);
-          font-size: 1.2rem;
-          font-weight: 600;
+          backdrop-filter: blur(10px) saturate(180%);
+          color: #333;
+          font-size: 1rem;
+          font-weight: 500;
           cursor: pointer;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          transition: all 0.3s ease;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 
-            0 6px 20px rgba(0, 0, 0, 0.1),
-            inset 0 1px 0 rgba(255, 255, 255, 0.3),
-            0 0 15px rgba(255, 255, 255, 0.1);
-          -webkit-backdrop-filter: blur(15px) saturate(1.5);
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .style-button:hover {
-          background: rgba(255, 255, 255, 0.4);
-          transform: translateY(-3px) scale(1.05);
-          box-shadow: 
-            0 10px 30px rgba(0, 0, 0, 0.2),
-            inset 0 1px 0 rgba(255, 255, 255, 0.6),
-            0 0 25px rgba(255, 255, 255, 0.2);
+          background: rgba(255, 255, 255, 0.3);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
         }
 
         .style-button.active {
-          background: linear-gradient(135deg, 
-            rgba(255, 20, 147, 0.3), 
-            rgba(255, 105, 180, 0.2));
-          border: 1px solid rgba(255, 20, 147, 0.5);
-          box-shadow: 
-            0 8px 25px rgba(255, 20, 147, 0.3),
-            inset 0 1px 0 rgba(255, 255, 255, 0.5),
-            0 0 30px rgba(255, 20, 147, 0.3);
-          border: 1px solid rgba(255, 20, 147, 0.6);
+          background: rgba(255, 182, 193, 0.8);
+          color: #fff;
         }
 
         @media (max-width: 768px) {

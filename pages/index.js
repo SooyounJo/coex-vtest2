@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Head from 'next/head'
 import { Canvas } from '@react-three/fiber'
 import ShaderBubble from '../components/1'
@@ -13,6 +13,16 @@ import { useRouter } from 'next/router'
 export default function Home() {
   const [selectedStyle, setSelectedStyle] = useState(1)
   const router = useRouter()
+
+  // URL 파라미터 처리
+  useEffect(() => {
+    if (router.query.style) {
+      const style = parseInt(router.query.style)
+      if (style >= 1 && style <= 7) {
+        setSelectedStyle(style)
+      }
+    }
+  }, [router.query.style])
 
   const handleStyleChange = (style) => {
     if (style === 8) {
