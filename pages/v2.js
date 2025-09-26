@@ -1,15 +1,15 @@
 import { useState } from 'react'
 import Head from 'next/head'
-import { Canvas } from '@react-three/fiber'
-import Shader1 from '../components/ver2/1'
-import Shader2 from '../components/ver2/2'
-import Shader3 from '../components/ver2/3'
-import Shader4 from '../components/ver2/4'
-import Shader5 from '../components/ver2/5'
+import V9 from '../components/ver2/9'
+import V10 from '../components/ver2/10'
+import V11 from '../components/ver2/11'
+import V12 from '../components/ver2/12'
+import V13 from '../components/ver2/13'
+import V14 from '../components/ver2/14'
 import { useRouter } from 'next/router'
 
 export default function V2Page() {
-  const [style, setStyle] = useState(2)
+  const [style, setStyle] = useState(9)
   const router = useRouter()
 
   const goV1 = () => {
@@ -37,29 +37,20 @@ export default function V2Page() {
 
       <div className="app-container">
         <div className="canvas-container">
-          <Canvas 
-            className="r3f-canvas"
-            dpr={[1, 3]}
-            gl={{ antialias: true, powerPreference: 'high-performance' }}
-            camera={{ position: [0, 0, 6], fov: 50 }}
-          >
-            <color attach="background" args={["#ffffff"]} />
-            <ambientLight intensity={0.3} />
-            <directionalLight position={[2, 3, 2]} intensity={0.5} />
-            {style === 1 ? <Shader1 styleType={1} /> :
-             style === 2 ? <Shader2 styleType={2} /> :
-             style === 3 ? <Shader3 /> :
-             style === 4 ? <Shader4 /> :
-             <Shader5 />}
-          </Canvas>
+          {style === 9 ? <V9 /> :
+           style === 10 ? <V10 /> :
+           style === 11 ? <V11 /> :
+           style === 12 ? <V12 /> :
+           style === 13 ? <V13 /> :
+           <V14 />}
           <div className="title-overlay">
             <h1 className="style-title">ver.2</h1>
           </div>
         </div>
 
-        {/* 하단 1-5 버튼 */}
-        <div className="version-switcher-bottom" role="navigation" aria-label="Style Switcher 1-5">
-          {[1, 2, 3, 4, 5].map((num) => (
+        {/* 하단 9-14 버튼 */}
+        <div className="version-switcher-bottom" role="navigation" aria-label="Style Switcher 9-14">
+          {[9, 10, 11, 12, 13, 14].map((num) => (
             <button
               key={num}
               className={`ver-button ${style === num ? 'active' : ''}`}

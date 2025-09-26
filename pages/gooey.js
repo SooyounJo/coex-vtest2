@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import Head from 'next/head'
-import GooeyShader from '../components/8'
+import Scene from '../components/ver2/Scene'
+import { gooeyShader } from '../components/ver2/gooeyShader'
 
 export default function GooeyPage() {
 
@@ -16,8 +17,8 @@ export default function GooeyPage() {
           <h1 className="style-title">Gooey Effect</h1>
         </div>
         
-        {/* Gooey Effect (Canvas 밖) */}
-        <GooeyShader />
+        {/* Gooey Effect */}
+        <Scene fragmentShader={gooeyShader} />
 
         <div className="back-button">
           <button onClick={() => window.history.back()}>←</button>
@@ -120,7 +121,6 @@ export default function GooeyPage() {
           left: 50%;
           transform: translateX(-50%);
           background: rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(10px) saturate(180%);
           border: 1px solid rgba(255, 255, 255, 0.2);
           border-radius: 20px;
           padding: 10px 15px;
@@ -140,7 +140,6 @@ export default function GooeyPage() {
           border: none;
           border-radius: 8px;
           background: rgba(255, 255, 255, 0.2);
-          backdrop-filter: blur(10px) saturate(180%);
           color: #333;
           font-size: 1rem;
           font-weight: 500;
