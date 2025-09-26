@@ -26,6 +26,8 @@ export default function BloomGradient() {
   const [dragStart, setDragStart] = useState({ y: 0, x: 0 });
   const [activeSection, setActiveSection] = useState(null);
   const [lightTrails, setLightTrails] = useState([]); // 빛의 잔상들
+  const [screenFlash, setScreenFlash] = useState(false); // 화면 전체 밝기 효과
+  const [movementHistory, setMovementHistory] = useState([]); // 움직임 히스토리
   const containerRef = useRef(null);
 
   // 빛의 잔상 추가
@@ -52,6 +54,40 @@ export default function BloomGradient() {
         opacity: Math.max(0, trail.opacity - 0.03)
       })).filter(trail => trail.opacity > 0)
     );
+  }, []);
+
+  // 빠른 움직임 감지 및 화면 플래시
+  const detectRapidMovement = useCallback((newPosition, section) => {
+    const now = Date.now();
+    const newMovement = {
+      position: newPosition,
+      timestamp: now,
+      section: section
+    };
+    
+    setMovementHistory(prev => {
+      const recentMovements = [...prev, newMovement].filter(
+        move => now - move.timestamp < 1000 // 1초 이내의 움직임만 유지
+      );
+      
+      // 빠른 위아래 움직임 감지
+      if (recentMovements.length >= 4) {
+        const positions = recentMovements.map(m => m.position);
+        const maxPos = Math.max(...positions);
+        const minPos = Math.min(...positions);
+        const range = maxPos - minPos;
+        
+        // 1초 내에 60% 이상의 범위를 움직였으면 빠른 움직임으로 판단
+        if (range > 60) {
+          setScreenFlash(true);
+          setTimeout(() => {
+            setScreenFlash(false);
+          }, 1000); // 1초 후 원래 상태로
+        }
+      }
+      
+      return recentMovements;
+    });
   }, []);
 
   // 섹션별 마우스 드래그 이벤트 핸들러
