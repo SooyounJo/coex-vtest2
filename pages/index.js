@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react'
 import Head from 'next/head'
 import { Canvas } from '@react-three/fiber'
-import ShaderBubble from '../components/1'
-import ShaderBubble2 from '../components/2'
-import ShaderBubble3 from '../components/3'
-import ShaderBubble4 from '../components/4'
-import ShaderBubble5 from '../components/5'
-import AgenticBubble from '../components/6'
-import SharpBubble from '../components/7'
+import ShaderBubble from '../components/ver1/1'
+import ShaderBubble2 from '../components/ver1/2'
+import ShaderBubble3 from '../components/ver1/3'
+import ShaderBubble4 from '../components/ver1/4'
+import ShaderBubble5 from '../components/ver1/5'
+import AgenticBubble from '../components/ver1/6'
+import SharpBubble from '../components/ver1/7'
 import { useRouter } from 'next/router'
 
 export default function Home() {
@@ -32,6 +32,13 @@ export default function Home() {
     setSelectedStyle(style)
   }
 
+  const goV1 = () => {
+    if (router.pathname !== '/') router.push('/')
+  }
+  const goV2 = () => {
+    if (router.pathname !== '/v2') router.push('/v2')
+  }
+
   return (
     <>
       <Head>
@@ -41,6 +48,12 @@ export default function Home() {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin />
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
       </Head>
+
+      {/* 상단 ver.1 / ver.2 */}
+      <div className="version-switcher" role="navigation" aria-label="Version Switcher">
+        <button className={`ver-button ${router.pathname === '/' ? 'active' : ''}`} onClick={goV1}>ver.1</button>
+        <button className={`ver-button ${router.pathname === '/v2' ? 'active' : ''}`} onClick={goV2}>ver.2</button>
+      </div>
 
       <div className="app-container">
         {/* 3D Canvas */}
@@ -63,8 +76,6 @@ export default function Home() {
             selectedStyle === 7 ? <SharpBubble styleType={7} /> :
             <ShaderBubble styleType={selectedStyle} />}
           </Canvas>
-          
-        {/* 8번 버튼은 별도 페이지로 이동 */}
           
           {/* 버튼별 제목 표시 */}
           {selectedStyle === 1 && (
@@ -104,19 +115,17 @@ export default function Home() {
           )}
         </div>
 
-        {/* 버튼 컨트롤 */}
-        <div className="controls">
-          <div className="button-grid">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
-              <button
-                key={num}
-                className={`style-button ${selectedStyle === num ? 'active' : ''}`}
-                onClick={() => handleStyleChange(num)}
-              >
-                {num}
-              </button>
-            ))}
-          </div>
+        {/* 하단 1-8 버튼 */}
+        <div className="version-switcher-bottom" role="navigation" aria-label="Style Switcher 1-8">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
+            <button
+              key={num}
+              className={`ver-button ${selectedStyle === num ? 'active' : ''}`}
+              onClick={() => handleStyleChange(num)}
+            >
+              {num}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -135,69 +144,19 @@ export default function Home() {
 
         .title-overlay {
           position: absolute;
-          top: 50px;
+          top: 72px;
           left: 50%;
           transform: translateX(-50%);
           z-index: 5;
         }
 
         .style-title {
-          color: #ffb6c1;
+          color: #000000;
           font-family: 'Poppins', sans-serif;
           font-weight: 300;
           font-size: 2.5rem;
           margin: 0;
           text-align: center;
-        }
-
-        .controls {
-          position: fixed;
-          bottom: 20px;
-          left: 50%;
-          transform: translateX(-50%);
-          background: rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(10px) saturate(180%);
-          border: 1px solid rgba(255, 255, 255, 0.2);
-          border-radius: 20px;
-          padding: 10px 15px;
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-          z-index: 10;
-        }
-
-        .button-grid {
-          display: flex;
-          gap: 8px;
-          align-items: center;
-        }
-
-        .style-button {
-          width: 50px;
-          height: 40px;
-          border: none;
-          border-radius: 8px;
-          background: rgba(255, 255, 255, 0.2);
-          backdrop-filter: blur(10px) saturate(180%);
-          color: #333;
-          font-size: 1rem;
-          font-weight: 500;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .style-button:hover {
-          background: rgba(255, 255, 255, 0.3);
-          box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-        }
-
-        .style-button.active {
-          background: rgba(255, 182, 193, 0.8);
-          color: #fff;
-          transform: translateY(-2px);
-          box-shadow: 0 6px 20px rgba(255, 182, 193, 0.4);
         }
 
         .r3f-canvas {
@@ -220,85 +179,20 @@ export default function Home() {
             height: 100%;
           }
           
-          .controls {
-            position: fixed;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 14px 16px;
-            width: calc(100vw - 20px);
-            max-width: 100%;
-            min-width: 0;
-          }
-          
-          .button-grid {
-            gap: 8px;
-            justify-content: space-between;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            padding: 0 4px;
-            width: 100%;
-            display: flex;
-            align-items: center;
-          }
-          
-          .style-button {
-            width: 44px;
-            height: 36px;
-            font-size: 0.9rem;
-            min-width: 44px;
-            flex-shrink: 0;
-            margin: 0 2px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-          }
-          
           .style-title {
             font-size: 1.8rem;
-            top: 30px;
+          }
+          .title-overlay {
+            top: 68px;
           }
         }
 
         @media (max-width: 480px) {
-          .controls {
-            bottom: 6px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 12px 14px;
-            width: calc(100vw - 16px);
-            max-width: 100%;
-            min-width: 0;
-          }
-          
-          .button-grid {
-            gap: 6px;
-            justify-content: space-between;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            padding: 0 2px;
-            width: 100%;
-            display: flex;
-            align-items: center;
-          }
-          
-          .style-button {
-            width: 40px;
-            height: 32px;
-            font-size: 0.8rem;
-            min-width: 40px;
-            flex-shrink: 0;
-            margin: 0 1px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 5px;
-          }
-          
           .style-title {
             font-size: 1.5rem;
-            top: 20px;
+          }
+          .title-overlay {
+            top: 64px;
           }
         }
       `}</style>
