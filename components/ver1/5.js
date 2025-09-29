@@ -31,14 +31,15 @@ export default function ShaderBubble5({ styleType = 5 }) {
         float wave = 0.05 * sin(u_time + uv.x * 4.0 + uv.y * 3.0);
         float n = noise(uv * 3.0 + u_time * 0.4);
         float bands = 0.5 + 0.5 * sin(r * 8.0 - u_time * 1.2 + n * 1.5);
-        vec3 pink   = vec3(1.0, 0.4, 0.8);
-        vec3 purple = vec3(0.65, 0.42, 1.0);
-        vec3 yellow = vec3(1.0, 0.75, 0.3);
-        vec3 color = mix(pink, purple, bands);
+        // 1번 톤에 맞춘 팔레트 (magenta/purple 계열)
+        vec3 cY = vec3(0.80, 0.40, 0.70);
+        vec3 cP = vec3(0.85, 0.20, 0.75);
+        vec3 cU = vec3(0.90, 0.50, 0.80);
+        vec3 color = mix(cP, cU, bands);
         float topBand = smoothstep(0.2, 0.8, uv.y + 0.3 + 0.1 * sin(u_time + uv.x * 2.0));
-        color = mix(color, yellow, topBand * 0.6);
+        color = mix(color, cY, topBand * 0.6);
         float edge = smoothstep(0.6, 0.95, r + wave);
-        color += edge * vec3(0.15, 0.05, 0.2);
+        color += edge * vec3(0.80, 0.40, 0.80) * 0.15;
         gl_FragColor = vec4(color, 1.0);
       }
     `,

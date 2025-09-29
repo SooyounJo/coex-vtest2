@@ -7,6 +7,7 @@ import ShaderBubble3 from '../components/ver1/3'
 import ShaderBubble4 from '../components/ver1/4'
 import ShaderBubble5 from '../components/ver1/5'
 import AgenticBubble from '../components/ver1/6'
+import ShaderBubble7 from '../components/ver1/7'
 import { useRouter } from 'next/router'
 
 export default function Home() {
@@ -17,7 +18,7 @@ export default function Home() {
   useEffect(() => {
     if (router.query.style) {
       const style = parseInt(router.query.style)
-      if (style >= 1 && style <= 6) {
+      if (style >= 1 && style <= 7) {
         setSelectedStyle(style)
       }
     }
@@ -52,23 +53,24 @@ export default function Home() {
             <ambientLight intensity={0.3} />
             <directionalLight position={[2, 3, 2]} intensity={0.5} />
             {selectedStyle === 1 ? <ShaderBubble styleType={selectedStyle} /> : 
-             selectedStyle === 2 ? <ShaderBubble2 styleType={selectedStyle} /> : 
+             selectedStyle === 2 ? <ShaderBubble4 /> : 
              selectedStyle === 3 ? <ShaderBubble3 /> : 
-             selectedStyle === 4 ? <ShaderBubble4 /> : 
+             selectedStyle === 4 ? <ShaderBubble2 styleType={selectedStyle} /> : 
             selectedStyle === 5 ? <ShaderBubble5 /> : 
             selectedStyle === 6 ? <AgenticBubble styleType={6} /> :
+            selectedStyle === 7 ? <ShaderBubble7 /> :
             <ShaderBubble styleType={selectedStyle} />}
           </Canvas>
           
           {/* 버튼별 제목 표시 */}
           {selectedStyle === 1 && (
             <div className="title-overlay">
-              <h1 className="style-title">Origin</h1>
+              <h1 className="style-title">main state</h1>
             </div>
           )}
           {selectedStyle === 2 && (
             <div className="title-overlay">
-              <h1 className="style-title">Magenta Wave</h1>
+              <h1 className="style-title">Organic Shape</h1>
             </div>
           )}
           {selectedStyle === 3 && (
@@ -78,7 +80,7 @@ export default function Home() {
           )}
           {selectedStyle === 4 && (
             <div className="title-overlay">
-              <h1 className="style-title">Organic Shape</h1>
+              <h1 className="style-title">Magenta Wave</h1>
             </div>
           )}
           {selectedStyle === 5 && (
@@ -88,14 +90,19 @@ export default function Home() {
           )}
           {selectedStyle === 6 && (
             <div className="title-overlay">
-              <h1 className="style-title">main state</h1>
+              <h1 className="style-title">Origin</h1>
+            </div>
+          )}
+          {selectedStyle === 7 && (
+            <div className="title-overlay">
+              <h1 className="style-title">Camera Move (Up/Down)</h1>
             </div>
           )}
         </div>
 
-        {/* 하단 1-6 버튼 */}
-        <div className="version-switcher-bottom" role="navigation" aria-label="Style Switcher 1-6">
-          {[1, 2, 3, 4, 5, 6].map((num) => (
+        {/* 하단 1-7 버튼 */}
+        <div className="version-switcher-bottom" role="navigation" aria-label="Style Switcher 1-7">
+          {[1, 2, 3, 4, 5, 6, 7].map((num) => (
             <button
               key={num}
               className={`ver-button ${selectedStyle === num ? 'active' : ''}`}

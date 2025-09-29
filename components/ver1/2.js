@@ -162,9 +162,13 @@ export default function ShaderBubble2({ styleType = 2 }) {
         lit += vec3(1.0, 0.1, 0.7) * (1.0 - topness) * 0.2;
 
         vec3 gray = vec3(dot(lit, vec3(0.299, 0.587, 0.114)));
-        lit = mix(gray, lit, 2.2); // 채도 대폭 증가
-        lit = pow(lit, vec3(0.85)); // 감마 조정으로 더 선명하게
-        lit *= 1.15; // 노출 증가로 더 밝게
+        float loopPhase = 0.5 + 0.5 * sin(6.28318530718 * time / 7.0);
+        float sat = 1.0 + 0.85 * loopPhase;
+        lit = mix(gray, lit, sat);
+        float contrast = 1.0 + 0.32 * loopPhase;
+        lit = (lit - 0.5) * contrast + 0.5;
+        lit = pow(lit, vec3(0.85));
+        lit *= 1.15;
         lit = mix(lit, vec3(1.0), 0.05);
         lit = clamp(lit, 0.0, 1.1);
 

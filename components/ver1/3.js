@@ -124,10 +124,10 @@ export default function ShaderBubble3() {
         float wobble3 = 0.997 + 0.003*n2(vUv*2.2 + time*0.06 + 3.1);
         w1 *= wobble1; w2 *= wobble2; w3 *= wobble3;
 
-        // 스타일 4: 핑크 홀로그램 색상 팔레트
-        vec3 cY = vec3(1.00, 0.84, 0.70);  // 핑크 베이스
-        vec3 cP = vec3(1.00, 0.62, 0.92);  // 핑크
-        vec3 cU = vec3(0.82, 0.70, 1.00);  // 라벤더
+        // 1번 톤에 맞춘 팔레트 (magenta/purple 계열)
+        vec3 cY = vec3(0.80, 0.40, 0.70);
+        vec3 cP = vec3(0.85, 0.20, 0.75);
+        vec3 cU = vec3(0.90, 0.50, 0.80);
 
         w1 *= vec3(0.18, 1.0, 0.95);
         w2 *= vec3(0.18, 1.0, 0.95);
@@ -146,9 +146,9 @@ export default function ShaderBubble3() {
         vec3 lit = base;
         lit = mix(lit, flowColor, flowMaskAvg * 0.95);
         
-        // 일렁이는 빛 효과 적용 (핑크 홀로그램)
-        vec3 rippleColor = vec3(1.0, 0.9, 0.8) * totalRipple * 0.3;
-        vec3 elasticColor = vec3(0.9, 0.7, 1.0) * totalElastic * 0.2;
+        // 일렁이는 빛 효과 적용 (1번 톤)
+        vec3 rippleColor = vec3(0.8, 0.4, 0.6) * totalRipple * 0.3;
+        vec3 elasticColor = vec3(0.8, 0.3, 0.7) * totalElastic * 0.2;
         lit += rippleColor + elasticColor;
 
         vec3 V = vec3(0.0, 0.0, 1.0);
@@ -158,12 +158,11 @@ export default function ShaderBubble3() {
         float centerDistance = length(p);
         float wavePhase = centerDistance * 8.0 - time * 3.0;
         
-        // 홀로그램 색상이 파동처럼 퍼지는 효과
-        vec3 hologramColor = vec3(
-          0.2 + 0.8 * sin(wavePhase + 0.0),
-          0.2 + 0.8 * sin(wavePhase + 2.094),
-          0.2 + 0.8 * sin(wavePhase + 4.188)
-        );
+        // 홀로그램 색상이 파동처럼 퍼지되, 1번 톤으로 재착색
+        float a = 0.5 + 0.5 * sin(wavePhase + 0.0);
+        float b = 0.5 + 0.5 * sin(wavePhase + 2.094);
+        float c = 0.5 + 0.5 * sin(wavePhase + 4.188);
+        vec3 hologramColor = (a * cY + b * cP + c * cU) / max(a + b + c, 1e-3);
         
         // 파동의 강도가 중심에서 바깥쪽으로 감쇠
         float waveIntensity = exp(-centerDistance * 2.0) * (1.0 + sin(wavePhase) * 0.5);
@@ -182,8 +181,15 @@ export default function ShaderBubble3() {
 
         lit += vec3(0.72, 0.57, 1.02) * (1.0 - topness) * 0.14;
 
+        // 1번과 동일한 채도/밝기/대비 루프 동기화
         vec3 gray = vec3(dot(lit, vec3(0.299, 0.587, 0.114)));
-        lit = mix(gray, lit, 2.00);
+        float loopPhaseColor = 0.5 + 0.5 * sin(6.28318530718 * time / 7.0);
+        float sat = 1.0 + 0.85 * loopPhaseColor;
+        lit = mix(gray, lit, sat);
+        float brightness = 1.0 + 0.14 * loopPhaseColor;
+        lit *= brightness;
+        float contrast = 1.0 + 0.32 * loopPhaseColor;
+        lit = (lit - 0.5) * contrast + 0.5;
         lit = pow(lit, vec3(0.86));
         lit *= 1.12;
         lit = mix(lit, vec3(1.0), 0.05);
