@@ -7,7 +7,6 @@ import ShaderBubble3 from '../components/ver1/3'
 import ShaderBubble4 from '../components/ver1/4'
 import ShaderBubble5 from '../components/ver1/5'
 import AgenticBubble from '../components/ver1/6'
-import SharpBubble from '../components/ver1/7'
 import { useRouter } from 'next/router'
 
 export default function Home() {
@@ -18,26 +17,16 @@ export default function Home() {
   useEffect(() => {
     if (router.query.style) {
       const style = parseInt(router.query.style)
-      if (style >= 1 && style <= 7) {
+      if (style >= 1 && style <= 6) {
         setSelectedStyle(style)
       }
     }
   }, [router.query.style])
 
   const handleStyleChange = (style) => {
-    if (style === 8) {
-      router.push('/gooey')
-      return
-    }
     setSelectedStyle(style)
   }
 
-  const goV1 = () => {
-    if (router.pathname !== '/') router.push('/')
-  }
-  const goV2 = () => {
-    if (router.pathname !== '/v2') router.push('/v2')
-  }
 
   return (
     <>
@@ -49,11 +38,6 @@ export default function Home() {
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
       </Head>
 
-      {/* 상단 ver.1 / ver.2 */}
-      <div className="version-switcher" role="navigation" aria-label="Version Switcher">
-        <button className={`ver-button ${router.pathname === '/' ? 'active' : ''}`} onClick={goV1}>ver.1</button>
-        <button className={`ver-button ${router.pathname === '/v2' ? 'active' : ''}`} onClick={goV2}>ver.2</button>
-      </div>
 
       <div className="app-container">
         {/* 3D Canvas */}
@@ -73,7 +57,6 @@ export default function Home() {
              selectedStyle === 4 ? <ShaderBubble4 /> : 
             selectedStyle === 5 ? <ShaderBubble5 /> : 
             selectedStyle === 6 ? <AgenticBubble styleType={6} /> :
-            selectedStyle === 7 ? <SharpBubble styleType={7} /> :
             <ShaderBubble styleType={selectedStyle} />}
           </Canvas>
           
@@ -105,19 +88,14 @@ export default function Home() {
           )}
           {selectedStyle === 6 && (
             <div className="title-overlay">
-              <h1 className="style-title">Smooth Glow</h1>
-            </div>
-          )}
-          {selectedStyle === 7 && (
-            <div className="title-overlay">
-              <h1 className="style-title">Sharp Glow</h1>
+              <h1 className="style-title">main state</h1>
             </div>
           )}
         </div>
 
-        {/* 하단 1-8 버튼 */}
-        <div className="version-switcher-bottom" role="navigation" aria-label="Style Switcher 1-8">
-          {[1, 2, 3, 4, 5, 6, 7, 8].map((num) => (
+        {/* 하단 1-6 버튼 */}
+        <div className="version-switcher-bottom" role="navigation" aria-label="Style Switcher 1-6">
+          {[1, 2, 3, 4, 5, 6].map((num) => (
             <button
               key={num}
               className={`ver-button ${selectedStyle === num ? 'active' : ''}`}

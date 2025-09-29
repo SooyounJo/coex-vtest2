@@ -54,7 +54,15 @@ export default function AgenticBubble({ styleType = 6 }) {
         vec3 lit=base; lit=mix(lit,flowColor,flowMaskAvg*0.4);
         vec3 rippleColor=vec3(0.8,0.4,0.6)*totalRipple*0.2; vec3 elasticColor=vec3(0.8,0.3,0.7)*totalElastic*0.15; lit+=rippleColor+elasticColor;
         vec3 V=vec3(0.0,0.0,1.0); float fres=pow(1.0 - max(dot(N,V),0.0),2.6); vec3 rimGlow=vec3(0.8,0.3,0.7)*fres*0.3; float softHalo=smoothstep(0.34,0.10,r)*0.08; vec3 glow=rimGlow + vec3(0.8,0.4,0.8)*softHalo; lit+=glow;
-        lit+=vec3(0.8,0.2,0.6)*(1.0-topness)*0.1; vec3 gray=vec3(dot(lit,vec3(0.299,0.587,0.114))); lit=mix(gray,lit,1.4); lit=pow(lit,vec3(0.9)); lit*=1.05; lit=mix(lit,vec3(1.0),0.02); lit=clamp(lit,0.0,1.0);
+        lit+=vec3(0.8,0.2,0.6)*(1.0-topness)*0.1; vec3 gray=vec3(dot(lit,vec3(0.299,0.587,0.114)));
+        float loopPhase = 0.5 + 0.5 * sin(6.28318530718 * time / 7.0);
+        float sat = 1.0 + 0.85 * loopPhase;
+        lit = mix(gray, lit, sat);
+        float brightness = 1.0 + 0.14 * loopPhase;
+        lit *= brightness;
+        float contrast = 1.0 + 0.32 * loopPhase;
+        lit = (lit - 0.5) * contrast + 0.5;
+        lit=pow(lit,vec3(0.9)); lit*=1.05; lit=mix(lit,vec3(1.0),0.02); lit=clamp(lit,0.0,1.0);
         float edgeFeather=smoothstep(0.52,0.36,r); float alpha=0.80*edgeFeather + fres*0.10; alpha=clamp(alpha,0.0,0.96);
         gl_FragColor=vec4(lit,alpha);
       }
