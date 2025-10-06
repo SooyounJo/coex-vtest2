@@ -1,8 +1,9 @@
 import { useFrame, useThree } from '@react-three/fiber'
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
+import AgenticBubble from './1'
 
-export default function ShaderBubble7() {
+export default function ShaderBubble7({ isActive = false }) {
   const material = useMemo(() => new THREE.ShaderMaterial({
     uniforms: {
       time: { value: 0 },
@@ -225,11 +226,14 @@ export default function ShaderBubble7() {
 
   return (
     <>
-      {/* 메인 구 */}
-      <mesh ref={meshRef} position={[0, yBottom, 0]}>
-        <sphereGeometry args={[radius, 256, 256]} />
-        <primitive object={material} attach="material" />
-      </mesh>
+      {isActive ? (
+        <mesh ref={meshRef} position={[0, yBottom, 0]}>
+          <sphereGeometry args={[radius, 256, 256]} />
+          <primitive object={material} attach="material" />
+        </mesh>
+      ) : (
+        <AgenticBubble />
+      )}
     </>
   )
 }

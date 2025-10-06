@@ -6,12 +6,14 @@ import ShaderBubble2 from '../components/ver1/2'
 import ShaderBubble3 from '../components/ver1/3'
 import ShaderBubble4 from '../components/ver1/4'
 import ShaderBubble5 from '../components/ver1/5'
-import AgenticBubble from '../components/ver1/6'
+import ShaderBubble6 from '../components/ver1/6'
 import ShaderBubble7 from '../components/ver1/7'
 import { useRouter } from 'next/router'
 
 export default function Home() {
   const [selectedStyle, setSelectedStyle] = useState(1)
+  const [isActive6, setIsActive6] = useState(false)
+  const [isActive7, setIsActive7] = useState(false)
   const router = useRouter()
 
   // URL 파라미터 처리
@@ -54,8 +56,8 @@ export default function Home() {
              selectedStyle === 3 ? <ShaderBubble3 /> : 
              selectedStyle === 4 ? <ShaderBubble4 /> : 
              selectedStyle === 5 ? <ShaderBubble5 /> : 
-             selectedStyle === 6 ? <AgenticBubble /> :
-             selectedStyle === 7 ? <ShaderBubble7 /> :
+             selectedStyle === 6 ? <ShaderBubble6 isActive={isActive6} /> :
+             selectedStyle === 7 ? <ShaderBubble7 isActive={isActive7} /> :
              <ShaderBubble />}
           </Canvas>
           
@@ -87,12 +89,28 @@ export default function Home() {
           )}
           {selectedStyle === 6 && (
             <div className="title-overlay">
-              <h1 className="style-title">Origin</h1>
+              <h1 className="style-title">Water Drop Effect</h1>
+              <div className="toggle-controls">
+                <button 
+                  className={`toggle-btn ${isActive6 ? 'active' : ''}`}
+                  onClick={() => setIsActive6(!isActive6)}
+                >
+                  {isActive6 ? 'Deactivate' : 'Activate'}
+                </button>
+              </div>
             </div>
           )}
           {selectedStyle === 7 && (
             <div className="title-overlay">
-              <h1 className="style-title">Camera Move (Up/Down)</h1>
+              <h1 className="style-title">Hologram Wave</h1>
+              <div className="toggle-controls">
+                <button 
+                  className={`toggle-btn ${isActive7 ? 'active' : ''}`}
+                  onClick={() => setIsActive7(!isActive7)}
+                >
+                  {isActive7 ? 'Deactivate' : 'Activate'}
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -122,6 +140,32 @@ export default function Home() {
         .canvas-container {
           flex: 1;
           position: relative;
+        }
+
+        .toggle-controls {
+          margin-top: 10px;
+          display: flex;
+          justify-content: center;
+        }
+
+        .toggle-btn {
+          padding: 8px 16px;
+          background: #4ecdc4;
+          color: white;
+          border: none;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: 600;
+          transition: background-color 0.3s ease;
+        }
+
+        .toggle-btn.active {
+          background: #ff6b6b;
+        }
+
+        .toggle-btn:hover {
+          opacity: 0.8;
         }
 
 
