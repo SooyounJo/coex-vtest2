@@ -65,12 +65,12 @@ export default function Home() {
           {/* 버튼별 제목 표시 */}
           {selectedStyle === 1 && (
             <div className="title-overlay">
-              <h1 className="style-title">main state</h1>
+              <h1 className="style-title">Main State</h1>
             </div>
           )}
           {selectedStyle === 2 && (
             <div className="title-overlay">
-              <h1 className="style-title">Organic Shape</h1>
+              <h1 className="style-title">Wave</h1>
             </div>
           )}
           {selectedStyle === 3 && (

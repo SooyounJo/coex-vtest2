@@ -6,7 +6,7 @@ export default function ShaderBubble2({ styleType = 2 }) {
   const material = useMemo(() => new THREE.ShaderMaterial({
     uniforms: {
       time: { value: 0 },
-      lightDir: { value: new THREE.Vector3(0.2, 0.9, 0.3).normalize() },
+      lightDir: { value: new THREE.Vector3(0.2, 0.9, 0.4).normalize() },
       ringDir: { value: new THREE.Vector3(0.08, 0.56, 0.86).normalize() },
     },
     vertexShader: `
@@ -54,7 +54,7 @@ export default function ShaderBubble2({ styleType = 2 }) {
       // 일레스틱 효과를 위한 웨이브 함수
       float elasticWave(float x, float frequency, float amplitude) {
         float wave = sin(x * frequency) * amplitude;
-        float decay = exp(-x * 0.05); // 더 천천히 감쇠
+        float decay = exp(-x * 0.06); // 더 천천히 감쇠
         float bounce = sin(x * frequency * 2.0) * amplitude * 0.3; // 바운스 효과
         return (wave + bounce) * decay;
       }
@@ -108,6 +108,7 @@ export default function ShaderBubble2({ styleType = 2 }) {
         float elastic1 = elasticWave(topness * 2.0 + time * 0.4, 3.0, 0.15);
         float elastic2 = elasticWave(topness * 3.0 + time * 0.6, 2.0, 0.08);
         float totalElastic = elastic1 + elastic2;
+
         // 블러 효과 (약화)
         float blurAmount = 0.02;
         float f1 = topness * scale + phase + totalRipple + totalElastic;
@@ -125,9 +126,9 @@ export default function ShaderBubble2({ styleType = 2 }) {
         w1 *= wobble1; w2 *= wobble2; w3 *= wobble3;
 
         // 고채도 핑크 색상 팔레트
-        vec3 cY = vec3(1.00, 0.20, 0.60);  // 네온핑크
+        vec3 cY = vec3(1.00, 0.40, 0.60);  // 네온핑크
         vec3 cP = vec3(1.00, 0.00, 0.80);  // 마젠타
-        vec3 cU = vec3(1.00, 0.40, 0.90);  // 바이브런트핑크
+        vec3 cU = vec3(1.00, 0.60, 0.90);  // 바이브런트핑크
 
         w1 *= vec3(0.18, 1.0, 0.95);
         w2 *= vec3(0.18, 1.0, 0.95);
