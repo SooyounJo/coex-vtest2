@@ -34,9 +34,6 @@ export default function Home() {
       <Head>
         <title>Shader Bubble</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin />
-        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
       </Head>
 
 
@@ -70,12 +67,12 @@ export default function Home() {
           )}
           {selectedStyle === 2 && (
             <div className="title-overlay">
-              <h1 className="style-title">Wave</h1>
+              <h1 className="style-title">Thinking</h1>
             </div>
           )}
           {selectedStyle === 3 && (
             <div className="title-overlay">
-              <h1 className="style-title">Big Wave</h1>
+              <h1 className="style-title">Speaking</h1>
             </div>
           )}
           {selectedStyle === 4 && (
