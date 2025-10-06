@@ -49,14 +49,14 @@ export default function Home() {
             <color attach="background" args={["#ffffff"]} />
             <ambientLight intensity={0.3} />
             <directionalLight position={[2, 3, 2]} intensity={0.5} />
-            {selectedStyle === 1 ? <ShaderBubble styleType={selectedStyle} /> : 
-             selectedStyle === 2 ? <ShaderBubble4 /> : 
+            {selectedStyle === 1 ? <ShaderBubble /> : 
+             selectedStyle === 2 ? <ShaderBubble2 /> : 
              selectedStyle === 3 ? <ShaderBubble3 /> : 
-             selectedStyle === 4 ? <ShaderBubble2 styleType={selectedStyle} /> : 
-            selectedStyle === 5 ? <ShaderBubble5 /> : 
-            selectedStyle === 6 ? <AgenticBubble styleType={6} /> :
-            selectedStyle === 7 ? <ShaderBubble7 /> :
-            <ShaderBubble styleType={selectedStyle} />}
+             selectedStyle === 4 ? <ShaderBubble4 /> : 
+             selectedStyle === 5 ? <ShaderBubble5 /> : 
+             selectedStyle === 6 ? <AgenticBubble /> :
+             selectedStyle === 7 ? <ShaderBubble7 /> :
+             <ShaderBubble />}
           </Canvas>
           
           {/* 버튼별 제목 표시 */}
