@@ -2,13 +2,17 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { useMemo, useRef } from 'react'
 import * as THREE from 'three'
 
-export default function AgenticBubble({ styleType = 6 }) {
+export default function AgenticBubble({ styleType = 6, cameraMode = 'default' }) {
   const material = useMemo(() => new THREE.ShaderMaterial({
-    uniforms: {
-      time: { value: 0 },
-      lightDir: { value: new THREE.Vector3(0.2, 0.9, 0.3).normalize() },
-      ringDir: { value: new THREE.Vector3(0.08, 0.56, 0.86).normalize() },
-    },
+      uniforms: {
+        time: { value: 0 },
+        lightDir: { value: new THREE.Vector3(0.2, 0.9, 0.3).normalize() },
+        ringDir: { value: new THREE.Vector3(0.08, 0.56, 0.86).normalize() },
+        camY: { value: 0.0 },
+        moveActive: { value: 0.0 },
+        camZ: { value: 6.0 },
+        zoomActive: { value: 0.0 },
+      },
     vertexShader: `
       varying vec2 vUv;
       varying vec3 vNormal;
@@ -26,6 +30,10 @@ export default function AgenticBubble({ styleType = 6 }) {
       uniform float time;
       uniform vec3 lightDir;
       uniform vec3 ringDir;
+      uniform float camY;       // 카메라 Y 위치
+      uniform float moveActive; // 상하 이동 모드 활성화 여부 (0 or 1)
+      uniform float camZ;       // 카메라 Z 위치
+      uniform float zoomActive; // 줌 모드 활성화 여부 (0 or 1)
       varying vec2 vUv;
       varying vec3 vNormal;
       float hash(vec2 p){ p=fract(p*vec2(123.34,345.45)); p+=dot(p,p+34.345); return fract(p.x*p.y);}      
@@ -62,6 +70,41 @@ export default function AgenticBubble({ styleType = 6 }) {
         lit *= brightness;
         float contrast = 1.0 + 0.32 * loopPhase;
         lit = (lit - 0.5) * contrast + 0.5;
+
+        // 상하 이동에 따른 채도/밝기 조절 (위로 갈수록 진하고, 아래로 갈수록 연하게)
+        // ampY ~= 0.20 기준으로 정규화
+        float yNorm = clamp(-camY / 0.20, -1.0, 1.0);
+        float up = max(yNorm, 0.0);
+        float down = max(-yNorm, 0.0);
+        // 채도: 위로 +, 아래로 -
+        float satAdjMove = up * 0.45 - down * 0.40;
+        // 밝기: 위로 약간 -, 아래로 약간 + (연해 보이도록)
+        float brightAdjMove = -up * 0.20 + down * 0.22;
+        // 대비: 위로 약간 +, 아래로 약간 -
+        float contrastAdjMove = up * 0.40 - down * 0.25;
+
+        // 줌 인/아웃에 따른 채도/밝기 조절 (줌 아웃 시 진하고, 줌 인 시 연하게)
+        // baseZ = 6, ampZ = 0.68 기준으로 정규화
+        float zNorm = clamp((camZ - 6.0) / 0.68, -1.0, 1.0);
+        float zoomOut = max(zNorm, 0.0);  // 줌 아웃 (z가 클수록)
+        float zoomIn = max(-zNorm, 0.0);  // 줌 인 (z가 작을수록)
+        // 채도: 줌 아웃 시 +, 줌 인 시 -
+        float satAdjZoom = zoomOut * 0.45 - zoomIn * 0.40;
+        // 밝기: 줌 아웃 시 -, 줌 인 시 + (연해 보이도록)
+        float brightAdjZoom = -zoomOut * 0.12 + zoomIn * 0.18;
+        // 대비: 줌 아웃 시 +, 줌 인 시 -
+        float contrastAdjZoom = zoomOut * 0.25 - zoomIn * 0.20;
+
+        // 전체 조정값 합산
+        float totalSatAdj = satAdjMove * moveActive + satAdjZoom * zoomActive;
+        float totalBrightAdj = brightAdjMove * moveActive + brightAdjZoom * zoomActive;
+        float totalContrastAdj = contrastAdjMove * moveActive + contrastAdjZoom * zoomActive;
+
+        vec3 gray2 = vec3(dot(lit, vec3(0.299, 0.587, 0.114)));
+        float satFactor = clamp(1.0 + totalSatAdj, 0.0, 2.0);
+        lit = mix(gray2, lit, satFactor);
+        lit *= (1.0 + totalBrightAdj);
+        lit = (lit - 0.5) * (1.0 + totalContrastAdj) + 0.5;
         lit=pow(lit,vec3(0.9)); lit*=1.05; lit=mix(lit,vec3(1.0),0.02); lit=clamp(lit,0.0,1.0);
         float edgeFeather=smoothstep(0.52,0.36,r); float alpha=0.80*edgeFeather + fres*0.10; alpha=clamp(alpha,0.0,0.96);
         gl_FragColor=vec4(lit,alpha);
@@ -70,7 +113,62 @@ export default function AgenticBubble({ styleType = 6 }) {
     transparent: true,
   }), [])
 
-  useFrame((state, delta) => { material.uniforms.time.value += delta })
+  // 스프링 속도 상태
+  const zVelocityRef = useRef(0)
+  const yVelocityRef = useRef(0)
+
+  useFrame((state, delta) => { 
+    material.uniforms.time.value += delta
+    
+    // 카메라 애니메이션 처리 (스프링 기반, 미세 진폭)
+    const { camera } = state
+    const time = state.clock.getElapsedTime()
+    const dt = Math.min(delta, 0.05)
+
+    const baseZ = 6 // Canvas 기본 카메라 z와 동기화
+    const baseY = 0
+
+    // 매우 미세한 진폭과 느린 주기
+    const periodZoom = 12 // 초
+    const periodMove = 12 // 초
+    const ampZ = 0.68 // z 진폭 (두 배 수준으로 증가)
+    const ampY = 0.20 // y 진폭 (살짝 추가)
+
+    const targetZ = cameraMode === 'zoom' 
+      ? baseZ + Math.sin((time / periodZoom) * Math.PI * 2) * ampZ 
+      : baseZ
+
+    const targetY = cameraMode === 'move' 
+      ? baseY + Math.sin((time / periodMove) * Math.PI * 2) * ampY 
+      : baseY
+
+    // 스프링 파라미터 (찰진 감쇠)
+    const stiffnessZ = 7.5
+    const stiffnessY = 7.5
+    const damping = 0.86 // 0~1, 낮을수록 강한 감쇠
+
+    // Z 축 스프링 업데이트
+    const currentZ = camera.position.z
+    const accZ = (targetZ - currentZ) * stiffnessZ
+    zVelocityRef.current += accZ * dt
+    zVelocityRef.current *= damping
+    const newZ = currentZ + zVelocityRef.current * dt
+
+    // Y 축 스프링 업데이트
+    const currentY = camera.position.y
+    const accY = (targetY - currentY) * stiffnessY
+    yVelocityRef.current += accY * dt
+    yVelocityRef.current *= damping
+    const newY = currentY + yVelocityRef.current * dt
+
+    camera.position.set(0, newY, newZ)
+
+    // 셰이더로 현재 카메라 Y와 이동 모드 전달
+    material.uniforms.camY.value = newY
+    material.uniforms.moveActive.value = cameraMode === 'move' ? 1.0 : 0.0
+    material.uniforms.camZ.value = newZ
+    material.uniforms.zoomActive.value = cameraMode === 'zoom' ? 1.0 : 0.0
+  })
 
   const meshRef = useRef()
   const { camera, viewport } = useThree()

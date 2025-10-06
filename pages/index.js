@@ -124,6 +124,7 @@ export default function Home() {
           position: relative;
         }
 
+
         .title-overlay {
           position: absolute;
           top: 72px;
