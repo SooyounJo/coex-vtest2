@@ -152,11 +152,11 @@ export default function AgenticBubble({ styleType = 6, cameraMode = 'default' })
   const meshRef = useRef()
   const { camera, viewport } = useThree()
   const v = viewport.getCurrentViewport(camera, [0, 0, 0])
-  // 모바일에서 더 크게, 하단 꽉 채우도록 여백 최소화
-  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
-  const radius = Math.min(v.width, v.height) * (isMobile ? 0.62 : 0.33)
-  const margin = isMobile ? v.height * 0.01 : v.height * 0.035
-  const yBottom = -v.height / 2 + radius + margin
+  // ver3 모달에서 항상 모바일 크기로 렌더링 (하단 잘리도록)
+  const isVer3 = typeof window !== 'undefined' && window.location.pathname === '/ver3'
+  const radius = Math.min(v.width, v.height) * (isVer3 ? 0.8 : 0.33)
+  const margin = isVer3 ? v.height * 0.01 : v.height * 0.035
+  const yBottom = isVer3 ? -v.height / 2 + radius * 0.6 + margin : -v.height / 2 + radius + margin
 
   return (
     <>

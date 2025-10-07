@@ -157,9 +157,11 @@ export default function ShaderBubble9({ isActive = false }) {
   const meshRef = useRef()
   const { camera, viewport } = useThree()
   const v = viewport.getCurrentViewport(camera, [0, 0, 0])
-  const radius = Math.min(v.width, v.height) * (window.innerWidth <= 768 ? 0.5 : 0.33)
-  const margin = v.height * 0.035
-  const yBottom = window.innerWidth <= 768 ? -v.height / 2 + radius + margin : -v.height / 2 + radius + margin
+  // ver3 모달에서 항상 모바일 크기로 렌더링 (하단 잘리도록)
+  const isVer3 = typeof window !== 'undefined' && window.location.pathname === '/ver3'
+  const radius = Math.min(v.width, v.height) * (isVer3 ? 0.8 : 0.33)
+  const margin = isVer3 ? v.height * 0.01 : v.height * 0.035
+  const yBottom = isVer3 ? -v.height / 2 + radius * 0.6 + margin : -v.height / 2 + radius + margin
 
   return (
     <mesh ref={meshRef} position={[0, yBottom, 0]}>

@@ -6,9 +6,9 @@ export default function Mobile2() {
   const meshRef = useRef()
   const { viewport } = useThree()
   const v = viewport.getCurrentViewport()
-  const radius = Math.min(v.width, v.height) * 0.25
-  const margin = v.height * 0.02
-  const yBottom = -v.height / 2 + radius + margin
+  const radius = Math.min(v.width, v.height) * 0.8
+  const margin = v.height * 0.01
+  const yBottom = -v.height / 2 + radius * 0.6 + margin
 
   const material = useMemo(() => new THREE.ShaderMaterial({
     uniforms: {
