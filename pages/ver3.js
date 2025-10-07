@@ -4,6 +4,8 @@ import { Canvas } from '@react-three/fiber'
 import Mobile1 from '../components/ver3/mobile1'
 import Mobile2 from '../components/ver3/mobile2'
 import Mobile3 from '../components/ver3/mobile3'
+import Mobile4 from '../components/ver3/mobile4'
+import EmotionList from '../components/ver3/EmotionList'
 import ShaderBubble from '../components/ver1/1'
 import ShaderBubble2 from '../components/ver1/2'
 import ShaderBubble3 from '../components/ver1/3'
@@ -12,11 +14,15 @@ import ShaderBubble5 from '../components/ver1/5'
 import Type1 from '../components/ver2/type1'
 import Type2 from '../components/ver2/type2'
 import Type3 from '../components/ver2/type3'
+import Type4 from '../components/ver2/type4'
+import Type5 from '../components/ver2/type5'
 import { useRouter } from 'next/router'
 
 export default function Ver3() {
   const [selectedStyle, setSelectedStyle] = useState(1)
   const [selectedMobile, setSelectedMobile] = useState(1)
+  const [emotionColor, setEmotionColor] = useState('#FF6B6B')
+  const [emotionCategory, setEmotionCategory] = useState('very_positive')
   const router = useRouter()
 
   // URL 파라미터 처리
@@ -38,10 +44,15 @@ export default function Ver3() {
 
   const handleMobileChange = (mobile) => {
     setSelectedMobile(mobile)
-    // M2로 변경할 때는 상단 버튼을 1번으로 리셋
-    if (mobile === 2) {
+    // M2, M3, M4로 변경할 때는 상단 버튼을 1번으로 리셋
+    if (mobile === 2 || mobile === 3 || mobile === 4) {
       setSelectedStyle(1)
     }
+  }
+
+  const handleEmotionColorChange = (color, category) => {
+    setEmotionColor(color)
+    setEmotionCategory(category)
   }
 
   return (
@@ -64,18 +75,20 @@ export default function Ver3() {
         </div>
         
         <div className="modal-container">
-          {/* 상단 버튼 - M2일 때는 2개만 표시 */}
-          <div className="top-buttons">
-            {(selectedMobile === 2 ? [1, 2] : [1, 2, 3]).map((num) => (
-              <button
-                key={num}
-                className={`top-button ${selectedStyle === num ? 'active' : ''}`}
-                onClick={() => handleStyleChange(num)}
-              >
-                {num}
-              </button>
-            ))}
-          </div>
+          {/* 상단 버튼 - M2일 때는 2개만, M3일 때는 5개 표시, M4일 때는 없음 */}
+          {selectedMobile !== 4 && (
+            <div className="top-buttons">
+              {(selectedMobile === 2 ? [1, 2] : selectedMobile === 3 ? [1, 2, 3, 4, 5] : [1, 2, 3]).map((num) => (
+                <button
+                  key={num}
+                  className={`top-button ${selectedStyle === num ? 'active' : ''}`}
+                  onClick={() => handleStyleChange(num)}
+                >
+                  {num}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* 헤더 (M2일 때만 표시) */}
           {selectedMobile === 2 && (
@@ -97,7 +110,7 @@ export default function Ver3() {
               <color attach="background" args={["#ffffff"]} />
               <ambientLight intensity={0.3} />
               <directionalLight position={[2, 3, 2]} intensity={0.5} />
-              {/* M2일 때는 4.js, 5.js 적용, M3일 때는 type1-3 적용, M1일 때는 기존 로직 */}
+              {/* M2일 때는 4.js, 5.js 적용, M3일 때는 type1-5 적용, M4일 때는 Mobile4, M1일 때는 기존 로직 */}
               {selectedMobile === 2 ? (
                 selectedStyle === 1 ? <ShaderBubble4 /> : 
                 selectedStyle === 2 ? <ShaderBubble5 /> : 
@@ -106,7 +119,11 @@ export default function Ver3() {
                 selectedStyle === 1 ? <Type1 /> : 
                 selectedStyle === 2 ? <Type2 /> : 
                 selectedStyle === 3 ? <Type3 /> : 
+                selectedStyle === 4 ? <Type4 /> :
+                selectedStyle === 5 ? <Type5 /> :
                 <Type1 />
+              ) : selectedMobile === 4 ? (
+                <Mobile4 emotionColor={emotionColor} emotionCategory={emotionCategory} />
               ) : (
                 /* M1일 때는 기존 로직 */
                 selectedStyle === 1 ? <ShaderBubble /> : 
@@ -118,11 +135,14 @@ export default function Ver3() {
               )}
             </Canvas>
             
+            {/* M4일 때만 감정 리스트 표시 */}
+            {selectedMobile === 4 && <EmotionList onColorChange={handleEmotionColorChange} />}
+            
           </div>
 
           {/* 하단 버튼 */}
           <div className="version-switcher-bottom" role="navigation" aria-label="Mobile Style Switcher">
-            {[1, 2, 3].map((num) => (
+            {[1, 2, 3, 4].map((num) => (
               <button
                 key={num}
                 className={`ver-button ${selectedMobile === num ? 'active' : ''}`}
@@ -181,9 +201,9 @@ export default function Ver3() {
           background: #ffffff;
           border-radius: 20px;
           width: 100%;
-          max-width: 375px;
-          height: 80vh;
-          min-height: 600px;
+          max-width: 420px;
+          height: 85vh;
+          min-height: 700px;
           display: flex;
           flex-direction: column;
           box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);

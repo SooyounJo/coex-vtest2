@@ -9,7 +9,6 @@ export default function Type1() {
       lightDir: { value: new THREE.Vector3(0.2, 0.9, 0.3).normalize() },
       ringDir: { value: new THREE.Vector3(0.08, 0.56, 0.86).normalize() },
       rotationPhase: { value: 0.0 },
-      isVer3: { value: 0.0 }, // ver3 모달 여부
     },
         vertexShader: `
           uniform float time;
@@ -91,6 +90,12 @@ export default function Type1() {
               pos.x * sinR + pos.y * cosR
             );
             
+            // 회전하는 순간 Y축으로 살짝 기울기
+            if (rotationAngle > 0.0) {
+              float tiltAmount = sin(rotationAngle * 0.5) * 0.3; // 회전 중에만 기울기
+              pos.z += pos.x * tiltAmount; // X 위치에 따라 Z축 기울기
+            }
+            
             vec4 worldPos = modelMatrix * vec4(pos, 1.0);
             vWorldPos = worldPos.xyz;
             gl_Position = projectionMatrix * viewMatrix * worldPos;
@@ -101,7 +106,6 @@ export default function Type1() {
       uniform float time;
       uniform vec3 lightDir;
       uniform vec3 ringDir;
-      uniform float isVer3;
       varying vec2 vUv;
       varying vec3 vNormal;
 
@@ -185,8 +189,8 @@ export default function Type1() {
             
             float perturb = 0.01 * n2(vUv * 1.5 + time * 0.05);
             
-            // 블러 효과 (ver3 모달에서는 더 강하게)
-            float blurAmount = isVer3 > 0.5 ? 0.05 : 0.02;
+            // 블러 효과 (기본값으로 통일)
+            float blurAmount = 0.02;
             float f1 = topness * scale + phase + totalRipple + totalElastic;
             float f2 = topness * scale + phase + blurAmount + totalRipple * 0.8 + totalElastic * 0.6;
             float f3 = topness * scale + phase + (blurAmount * 1.5) + totalRipple * 0.6 + totalElastic * 0.4;
@@ -267,9 +271,6 @@ export default function Type1() {
     
     // 회전 애니메이션 제거 - rotationPhase를 0으로 고정
     material.uniforms.rotationPhase.value = 0.0
-    
-    // ver3 모달 여부 설정
-    material.uniforms.isVer3.value = isVer3 ? 1.0 : 0.0
   })
 
   const meshRef = useRef()
