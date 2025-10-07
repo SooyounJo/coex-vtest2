@@ -2,21 +2,20 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { useMemo, useRef, useState, useEffect } from 'react'
 import * as THREE from 'three'
 
-export default function ShaderBubble6({ isActive = false }) {
-  const [transitionProgress, setTransitionProgress] = useState(1)
+export default function ShaderBubble8({ isActive = false }) {
+  const [transitionProgress, setTransitionProgress] = useState(0)
   const [isTransitioning, setIsTransitioning] = useState(false)
-  
-  // 1.js와 동일한 기본 셰이더 + 물방울 효과 추가
-  const material = useMemo(() => new THREE.ShaderMaterial({
+
+  const NUM_SPHERES = 5
+  const indices = useMemo(() => Array.from({ length: NUM_SPHERES }, (_, i) => i), [])
+
+  // 기본 1.js 셰이더 (색/광택 동일) + 개별 투명도 제어
+  const materials = useMemo(() => indices.map(() => new THREE.ShaderMaterial({
       uniforms: {
         time: { value: 0 },
         lightDir: { value: new THREE.Vector3(0.2, 0.9, 0.3).normalize() },
         ringDir: { value: new THREE.Vector3(0.08, 0.56, 0.86).normalize() },
-        camY: { value: 0.0 },
-        moveActive: { value: 0.0 },
-        camZ: { value: 6.0 },
-        zoomActive: { value: 0.0 },
-        transitionProgress: { value: 0 },
+        uOpacity: { value: 1.0 },
       },
     vertexShader: `
       varying vec2 vUv;
@@ -35,11 +34,7 @@ export default function ShaderBubble6({ isActive = false }) {
       uniform float time;
       uniform vec3 lightDir;
       uniform vec3 ringDir;
-      uniform float camY;       // 카메라 Y 위치
-      uniform float moveActive; // 상하 이동 모드 활성화 여부 (0 or 1)
-      uniform float camZ;       // 카메라 Z 위치
-      uniform float zoomActive; // 줌 모드 활성화 여부 (0 or 1)
-      uniform float transitionProgress; // 물방울 효과 트랜지션 진행도
+      uniform float uOpacity; // 개별 투명도
       varying vec2 vUv;
       varying vec3 vNormal;
       
@@ -52,31 +47,15 @@ export default function ShaderBubble6({ isActive = false }) {
       vec3 bandWeights(float f){ float width=0.25; float y=bumpMove(0.18,width,f); float p=bumpMove(0.52,width,f); float u=bumpMove(0.86,width,f); return vec3(y,p,u);}      
       
       void main(){
-        vec3 N=normalize(vNormal); vec3 L=normalize(lightDir); vec2 p=vUv-0.5; float r=length(p);
+        vec3 N=normalize(vNormal); vec2 p=vUv-0.5; float r=length(p);
         float breathing=breathingMotion(time); r=r*(1.0+breathing*0.3);
         float topness=clamp(dot(N,normalize(ringDir))*0.5+0.5,0.0,1.0);
         vec3 peach=vec3(1.00,0.90,0.72); vec3 pink=vec3(1.00,0.70,0.90); vec3 purple=vec3(0.82,0.68,1.00);
         vec3 base=mix(pink,peach,clamp(0.5+0.5*topness,0.0,1.0)); base=mix(base,purple,smoothstep(0.0,0.35,1.0-topness));
         float loopSec=10.0; float loopT=mod(time,loopSec)/loopSec; float phase=-loopT;
-        
-        // 1.js 기본 리플 효과
         float ripple1=noise(vUv*3.0+time*0.5)*0.05; float ripple2=noise(vUv*5.0+time*0.3)*0.025; float ripple3=noise(vUv*7.0+time*0.7)*0.015; float totalRipple=ripple1+ripple2+ripple3;
         float elastic1=elasticWave(topness*2.0+time*0.4,3.0,0.08); float elastic2=elasticWave(topness*3.0+time*0.6,2.0,0.04); float totalElastic=elastic1+elastic2;
-        
-        // 물방울 효과 (트랜지션 적용)
-        float drop1=sin(time*2.0)*0.3+0.5; float drop2=sin(time*1.7+1.5)*0.25+0.5; float drop3=sin(time*2.3+3.1)*0.2+0.5;
-        float dist1=length(vUv-vec2(0.2,drop1)); float dist2=length(vUv-vec2(-0.3,drop2)); float dist3=length(vUv-vec2(0.4,drop3));
-        float waterRipple1=sin(dist1*20.0-time*15.0)*exp(-dist1*8.0)*0.1; float waterRipple2=sin(dist2*18.0-time*12.0)*exp(-dist2*6.0)*0.08; float waterRipple3=sin(dist3*22.0-time*18.0)*exp(-dist3*7.0)*0.09; 
-        float totalWaterRipple = (waterRipple1 + waterRipple2 + waterRipple3) * transitionProgress;
-        float waterElastic1=elasticWave(topness*2.0+time*0.4,3.0,0.15); float waterElastic2=elasticWave(topness*3.0+time*0.6,2.0,0.08); 
-        float totalWaterElastic = (waterElastic1 + waterElastic2) * transitionProgress;
-        
-        // 기본 효과와 물방울 효과 결합
-        float blurAmount=0.01; 
-        float f1=topness*1.8+phase+totalRipple+totalElastic+totalWaterRipple+totalWaterElastic; 
-        float f2=topness*1.8+phase+blurAmount+totalRipple*0.8+totalElastic*0.6+(totalWaterRipple+totalWaterElastic)*0.8; 
-        float f3=topness*1.8+phase+(blurAmount*1.5)+totalRipple*0.6+totalElastic*0.4+(totalWaterRipple+totalWaterElastic)*0.6;
-        
+        float blurAmount=0.01; float f1=topness*1.8+phase+totalRipple+totalElastic; float f2=topness*1.8+phase+blurAmount+totalRipple*0.8+totalElastic*0.6; float f3=topness*1.8+phase+(blurAmount*1.5)+totalRipple*0.6+totalElastic*0.4;
         float perturb=0.01*n2(vUv*1.5+time*0.05); vec3 w1=bandWeights(f1+perturb); vec3 w2=bandWeights(f2+perturb*0.8); vec3 w3=bandWeights(f3+perturb*0.6);
         float wobble1=0.997+0.001*n2(vUv*2.2+time*0.06); float wobble2=0.997+0.001*n2(vUv*2.2+time*0.06+1.7); float wobble3=0.997+0.001*n2(vUv*2.2+time*0.06+3.1); w1*=wobble1; w2*=wobble2; w3*=wobble3;
         vec3 cY=vec3(0.80,0.40,0.70); vec3 cP=vec3(0.85,0.20,0.75); vec3 cU=vec3(0.90,0.50,0.80);
@@ -85,11 +64,6 @@ export default function ShaderBubble6({ isActive = false }) {
         float mask1=clamp(w1.x+w1.y+w1.z,0.0,1.0); float mask2=clamp(w2.x+w2.y+w2.z,0.0,1.0); float mask3=clamp(w3.x+w3.y+w3.z,0.0,1.0); float flowMaskAvg=clamp((0.5*mask1 + 0.35*mask2 + 0.15*mask3),0.0,1.0);
         vec3 lit=base; lit=mix(lit,flowColor,flowMaskAvg*0.4);
         vec3 rippleColor=vec3(0.8,0.4,0.6)*totalRipple*0.2; vec3 elasticColor=vec3(0.8,0.3,0.7)*totalElastic*0.15; lit+=rippleColor+elasticColor;
-        
-        // 물방울 색상 효과 추가
-        vec3 waterColor = vec3(0.6, 0.8, 1.0) * (totalWaterRipple + totalWaterElastic) * 0.3;
-        lit += waterColor;
-        
         vec3 V=vec3(0.0,0.0,1.0); float fres=pow(1.0 - max(dot(N,V),0.0),2.6); vec3 rimGlow=vec3(0.8,0.3,0.7)*fres*0.3; float softHalo=smoothstep(0.34,0.10,r)*0.08; vec3 glow=rimGlow + vec3(0.8,0.4,0.8)*softHalo; lit+=glow;
         lit+=vec3(0.8,0.2,0.6)*(1.0-topness)*0.1; vec3 gray=vec3(dot(lit,vec3(0.299,0.587,0.114)));
         float loopPhase = 0.5 + 0.5 * sin(6.28318530718 * time / 7.0);
@@ -99,90 +73,71 @@ export default function ShaderBubble6({ isActive = false }) {
         lit *= brightness;
         float contrast = 1.0 + 0.32 * loopPhase;
         lit = (lit - 0.5) * contrast + 0.5;
-
-        // 상하 이동에 따른 채도/밝기 조절 (위로 갈수록 진하고, 아래로 갈수록 연하게)
-        float yNorm = clamp(-camY / 0.20, -1.0, 1.0);
-        float up = max(yNorm, 0.0);
-        float down = max(-yNorm, 0.0);
-        float satAdjMove = up * 0.45 - down * 0.40;
-        float brightAdjMove = -up * 0.20 + down * 0.22;
-        float contrastAdjMove = up * 0.40 - down * 0.25;
-
-        // 줌 인/아웃에 따른 채도/밝기 조절 (줌 아웃 시 진하고, 줌 인 시 연하게)
-        float zNorm = clamp((camZ - 6.0) / 0.68, -1.0, 1.0);
-        float zoomOut = max(zNorm, 0.0);
-        float zoomIn = max(-zNorm, 0.0);
-        float satAdjZoom = zoomOut * 0.45 - zoomIn * 0.40;
-        float brightAdjZoom = -zoomOut * 0.12 + zoomIn * 0.18;
-        float contrastAdjZoom = zoomOut * 0.25 - zoomIn * 0.20;
-
-        // 전체 조정값 합산
-        float totalSatAdj = satAdjMove * moveActive + satAdjZoom * zoomActive;
-        float totalBrightAdj = brightAdjMove * moveActive + brightAdjZoom * zoomActive;
-        float totalContrastAdj = contrastAdjMove * moveActive + contrastAdjZoom * zoomActive;
-
-        vec3 gray2 = vec3(dot(lit, vec3(0.299, 0.587, 0.114)));
-        float satFactor = clamp(1.0 + totalSatAdj, 0.0, 2.0);
-        lit = mix(gray2, lit, satFactor);
-        lit *= (1.0 + totalBrightAdj);
-        lit = (lit - 0.5) * (1.0 + totalContrastAdj) + 0.5;
-        
         lit=pow(lit,vec3(0.9)); lit*=1.05; lit=mix(lit,vec3(1.0),0.02); lit=clamp(lit,0.0,1.0);
-        float edgeFeather=smoothstep(0.52,0.36,r); float alpha=0.80*edgeFeather + fres*0.10; alpha=clamp(alpha,0.0,0.96);
+        float edgeFeather=smoothstep(0.52,0.36,r); float alpha=0.90*edgeFeather + fres*0.15; alpha=clamp(alpha,0.0,1.0);
+        alpha *= uOpacity; // 개별 투명도로 조정
         gl_FragColor=vec4(lit,alpha);
       }
     `,
     transparent: true,
-  }), [])
+    depthWrite: false,
+  })), [indices])
 
-  // 3초 트랜지션 효과
+  // 3초 트랜지션: 활성화 시 파동 진폭 증가, 비활성화 시 0
   useEffect(() => {
     setIsTransitioning(true)
     const startTime = Date.now()
-    const duration = 3000 // 3초
-    
-    // 초기값 설정
-    setTransitionProgress(isActive ? 0 : 1)
-    material.uniforms.transitionProgress.value = isActive ? 0 : 1
-    
+    const duration = 3000
+
     const animate = () => {
       const elapsed = Date.now() - startTime
       const progress = Math.min(elapsed / duration, 1)
-      
-      // 부드러운 이징 함수 (ease-in-out cubic)
-      const easedProgress = progress < 0.5 
-        ? 4 * progress * progress * progress
-        : 1 - Math.pow(-2 * progress + 2, 3) / 2
-      
-      const targetProgress = isActive ? easedProgress : 1 - easedProgress
-      setTransitionProgress(targetProgress)
-      material.uniforms.transitionProgress.value = targetProgress
-      
-      if (progress < 1) {
-        requestAnimationFrame(animate)
-      } else {
-        setIsTransitioning(false)
-      }
+      const eased = progress < 0.5 ? 4 * progress * progress * progress : 1 - Math.pow(-2 * progress + 2, 3) / 2
+      const target = isActive ? eased : 1 - eased
+      setTransitionProgress(target)
+      if (progress < 1) requestAnimationFrame(animate); else setIsTransitioning(false)
     }
-    
     requestAnimationFrame(animate)
-  }, [isActive, material])
+  }, [isActive])
 
   useFrame((state, delta) => {
-    material.uniforms.time.value += delta
+    const t = state.clock.getElapsedTime()
+    materials.forEach((mat, i) => {
+      mat.uniforms.time.value = t
+      // 각 구의 투명도: 안쪽은 더 진하고 바깥은 더 옅게 (큰 구는 더 옅게)
+      const innerWeight = (NUM_SPHERES - i) / NUM_SPHERES
+      const baseOpacity = 0.28 + innerWeight * 0.38
+      const pulse = 0.6 + 0.4 * Math.sin(t * 2.0 - i * 0.7)
+      mat.uniforms.uOpacity.value = THREE.MathUtils.clamp(baseOpacity * (0.6 + 0.4 * transitionProgress * pulse), 0.06, 0.95)
+    })
   })
 
-  const meshRef = useRef()
   const { camera, viewport } = useThree()
   const v = viewport.getCurrentViewport(camera, [0, 0, 0])
-  const radius = Math.min(v.width, v.height) * (window.innerWidth <= 768 ? 0.5 : 0.33)
+  const baseRadius = Math.min(v.width, v.height) * (window.innerWidth <= 768 ? 0.5 : 0.33)
   const margin = v.height * 0.035
-  const yBottom = window.innerWidth <= 768 ? -v.height / 2 + radius + margin : -v.height / 2 + radius + margin
+  const yBottom = window.innerWidth <= 768 ? -v.height / 2 + baseRadius * 0.3 : -v.height / 2 + baseRadius * 0.3
 
   return (
-    <mesh ref={meshRef} position={[0, yBottom, 0]}>
-      <sphereGeometry args={[radius, 256, 256]} />
-      <primitive object={material} attach="material" />
-    </mesh>
+    <>
+      {(() => {
+        const time = (materials[0] && materials[0].uniforms.time.value) || 0.0
+        return indices.map((i) => {
+          // 균일 성장: 5개 모두 화면 안에 보이도록 최대 크기 제한
+          const step = 0.25 // 각 레이어 간 크기 차이
+          const baseScale = 1.0 + i * step // [1.0, 1.25, 1.5, 1.75, 2.0]
+          // 숨쉬기: 매우 느리고 미세한 스케일 변조 (약 10초 주기)
+          const breath = 1.0 + 0.03 * transitionProgress * Math.sin(time * 0.6 + i * 0.8)
+          const s = baseScale * breath
+          const zOffset = -i * 0.02 // 살짝만 뒤로 배치
+          return (
+            <mesh key={i} position={[0, yBottom, zOffset]} scale={[baseRadius * s, baseRadius * s, baseRadius * s]}>
+              <sphereGeometry args={[1, 256, 256]} />
+              <primitive object={materials[i]} attach="material" />
+            </mesh>
+          )
+        })
+      })()}
+    </>
   )
 }

@@ -3,7 +3,7 @@ import { useMemo, useRef, useState, useEffect } from 'react'
 import * as THREE from 'three'
 
 export default function ShaderBubble7({ isActive = false }) {
-  const [transitionProgress, setTransitionProgress] = useState(0)
+  const [transitionProgress, setTransitionProgress] = useState(1)
   const [isTransitioning, setIsTransitioning] = useState(false)
   
   // 1.js와 동일한 기본 셰이더 + 홀로그램 효과 추가

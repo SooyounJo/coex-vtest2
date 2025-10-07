@@ -8,19 +8,24 @@ import ShaderBubble4 from '../components/ver1/4'
 import ShaderBubble5 from '../components/ver1/5'
 import ShaderBubble6 from '../components/ver1/6'
 import ShaderBubble7 from '../components/ver1/7'
+import ShaderBubble8 from '../components/ver1/8'
+import ShaderBubble9 from '../components/ver1/9'
+import ShaderBubble10 from '../components/ver1/10'
 import { useRouter } from 'next/router'
 
 export default function Home() {
   const [selectedStyle, setSelectedStyle] = useState(1)
   const [isActive6, setIsActive6] = useState(false)
   const [isActive7, setIsActive7] = useState(false)
+  const [isActive8, setIsActive8] = useState(false)
+  const [isActive9, setIsActive9] = useState(false)
   const router = useRouter()
 
   // URL 파라미터 처리
   useEffect(() => {
     if (router.query.style) {
       const style = parseInt(router.query.style)
-      if (style >= 1 && style <= 7) {
+      if (style >= 1 && style <= 10) {
         setSelectedStyle(style)
       }
     }
@@ -56,9 +61,12 @@ export default function Home() {
              selectedStyle === 3 ? <ShaderBubble3 /> : 
              selectedStyle === 4 ? <ShaderBubble4 /> : 
              selectedStyle === 5 ? <ShaderBubble5 /> : 
-             selectedStyle === 6 ? <ShaderBubble6 isActive={isActive6} /> :
-             selectedStyle === 7 ? <ShaderBubble7 isActive={isActive7} /> :
-             <ShaderBubble />}
+                 selectedStyle === 6 ? <ShaderBubble6 isActive={isActive6} /> :
+                 selectedStyle === 7 ? <ShaderBubble7 isActive={isActive7} /> :
+                 selectedStyle === 8 ? <ShaderBubble8 isActive={isActive8} /> :
+                 selectedStyle === 9 ? <ShaderBubble9 isActive={isActive9} /> :
+                 selectedStyle === 10 ? <ShaderBubble10 /> :
+                 <ShaderBubble />}
           </Canvas>
           
           {/* 버튼별 제목 표시 */}
@@ -100,24 +108,55 @@ export default function Home() {
               </div>
             </div>
           )}
-          {selectedStyle === 7 && (
-            <div className="title-overlay">
-              <h1 className="style-title">Hologram Wave</h1>
-              <div className="toggle-controls">
-                <button 
-                  className={`toggle-btn ${isActive7 ? 'active' : ''}`}
-                  onClick={() => setIsActive7(!isActive7)}
-                >
-                  {isActive7 ? 'Deactivate' : 'Activate'}
-                </button>
-              </div>
-            </div>
-          )}
+              {selectedStyle === 7 && (
+                <div className="title-overlay">
+                  <h1 className="style-title">Hologram Wave</h1>
+                  <div className="toggle-controls">
+                    <button 
+                      className={`toggle-btn ${isActive7 ? 'active' : ''}`}
+                      onClick={() => setIsActive7(!isActive7)}
+                    >
+                      {isActive7 ? 'Deactivate' : 'Activate'}
+                    </button>
+                  </div>
+                </div>
+              )}
+              {selectedStyle === 8 && (
+                <div className="title-overlay">
+                  <h1 className="style-title">Aurora Effect</h1>
+                  <div className="toggle-controls">
+                    <button 
+                      className={`toggle-btn ${isActive8 ? 'active' : ''}`}
+                      onClick={() => setIsActive8(!isActive8)}
+                    >
+                      {isActive8 ? 'Deactivate' : 'Activate'}
+                    </button>
+                  </div>
+                </div>
+              )}
+              {selectedStyle === 9 && (
+                <div className="title-overlay">
+                  <h1 className="style-title">Crystal Effect</h1>
+                  <div className="toggle-controls">
+                    <button 
+                      className={`toggle-btn ${isActive9 ? 'active' : ''}`}
+                      onClick={() => setIsActive9(!isActive9)}
+                    >
+                      {isActive9 ? 'Deactivate' : 'Activate'}
+                    </button>
+                  </div>
+                </div>
+              )}
+              {selectedStyle === 10 && (
+                <div className="title-overlay">
+                  <h1 className="style-title">Exhale Wave</h1>
+                </div>
+              )}
         </div>
 
-        {/* 하단 1-7 버튼 */}
-        <div className="version-switcher-bottom" role="navigation" aria-label="Style Switcher 1-7">
-          {[1, 2, 3, 4, 5, 6, 7].map((num) => (
+        {/* 하단 1-10 버튼 */}
+        <div className="version-switcher-bottom" role="navigation" aria-label="Style Switcher 1-10">
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
             <button
               key={num}
               className={`ver-button ${selectedStyle === num ? 'active' : ''}`}
