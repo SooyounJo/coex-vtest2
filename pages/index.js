@@ -11,6 +11,7 @@ import ShaderBubble7 from '../components/ver1/7'
 import ShaderBubble8 from '../components/ver1/8'
 import ShaderBubble9 from '../components/ver1/9'
 import ShaderBubble10 from '../components/ver1/10'
+import ShaderBubble22 from '../components/ver1/2.2'
 import { useRouter } from 'next/router'
 
 export default function Home() {
@@ -19,19 +20,26 @@ export default function Home() {
   const [isActive7, setIsActive7] = useState(false)
   const router = useRouter()
 
+  // 스타일 변경 시 6, 7번을 비활성화 상태로 리셋
+  const handleStyleChange = (style) => {
+    setSelectedStyle(style)
+    if (style === 6) {
+      setIsActive6(false)
+    } else if (style === 7) {
+      setIsActive7(false)
+    }
+  }
+
   // URL 파라미터 처리
   useEffect(() => {
     if (router.query.style) {
       const style = parseInt(router.query.style)
-      if (style >= 1 && style <= 10) {
+      if ((style >= 1 && style <= 9) || style === 22) {
         setSelectedStyle(style)
       }
     }
   }, [router.query.style])
 
-  const handleStyleChange = (style) => {
-    setSelectedStyle(style)
-  }
 
 
   return (
@@ -56,6 +64,7 @@ export default function Home() {
             <directionalLight position={[2, 3, 2]} intensity={0.5} />
             {selectedStyle === 1 ? <ShaderBubble /> : 
              selectedStyle === 2 ? <ShaderBubble2 /> : 
+             selectedStyle === 22 ? <ShaderBubble22 /> :
              selectedStyle === 3 ? <ShaderBubble3 /> : 
              selectedStyle === 4 ? <ShaderBubble4 /> : 
              selectedStyle === 5 ? <ShaderBubble5 /> : 
@@ -63,7 +72,6 @@ export default function Home() {
                  selectedStyle === 7 ? <ShaderBubble7 isActive={isActive7} /> :
                  selectedStyle === 8 ? <ShaderBubble8 isActive={true} /> :
                  selectedStyle === 9 ? <ShaderBubble9 isActive={true} /> :
-                 selectedStyle === 10 ? <ShaderBubble10 /> :
                  <ShaderBubble />}
           </Canvas>
           
@@ -75,22 +83,27 @@ export default function Home() {
           )}
           {selectedStyle === 2 && (
             <div className="title-overlay">
-              <h1 className="style-title">Thinking</h1>
+              <h1 className="style-title">Speaking</h1>
+            </div>
+          )}
+          {selectedStyle === 22 && (
+            <div className="title-overlay">
+              <h1 className="style-title">Speaking v2</h1>
             </div>
           )}
           {selectedStyle === 3 && (
             <div className="title-overlay">
-              <h1 className="style-title">Speaking</h1>
+              <h1 className="style-title">Thinking</h1>
             </div>
           )}
           {selectedStyle === 4 && (
             <div className="title-overlay">
-              <h1 className="style-title">Magenta Wave</h1>
+              <h1 className="style-title">Zoom In/Out</h1>
             </div>
           )}
           {selectedStyle === 5 && (
             <div className="title-overlay">
-              <h1 className="style-title">Glossy Wave</h1>
+              <h1 className="style-title">Up and Down</h1>
             </div>
           )}
           {selectedStyle === 6 && (
@@ -98,23 +111,35 @@ export default function Home() {
               <h1 className="style-title">Water Drop Effect</h1>
               <div className="toggle-controls">
                 <button 
-                  className={`toggle-btn ${isActive6 ? 'active' : ''}`}
-                  onClick={() => setIsActive6(!isActive6)}
+                  className={`toggle-btn activate-btn ${isActive6 ? 'active' : ''}`}
+                  onClick={() => setIsActive6(true)}
                 >
-                  {isActive6 ? 'Deactivate' : 'Activate'}
+                  Activate
+                </button>
+                <button 
+                  className={`toggle-btn deactivate-btn ${!isActive6 ? 'active' : ''}`}
+                  onClick={() => setIsActive6(false)}
+                >
+                  Deactivate
                 </button>
               </div>
             </div>
           )}
           {selectedStyle === 7 && (
             <div className="title-overlay">
-              <h1 className="style-title">Hologram Wave</h1>
+              <h1 className="style-title">Radial Wave</h1>
               <div className="toggle-controls">
                 <button 
-                  className={`toggle-btn ${isActive7 ? 'active' : ''}`}
-                  onClick={() => setIsActive7(!isActive7)}
+                  className={`toggle-btn activate-btn ${isActive7 ? 'active' : ''}`}
+                  onClick={() => setIsActive7(true)}
                 >
-                  {isActive7 ? 'Deactivate' : 'Activate'}
+                  Activate
+                </button>
+                <button 
+                  className={`toggle-btn deactivate-btn ${!isActive7 ? 'active' : ''}`}
+                  onClick={() => setIsActive7(false)}
+                >
+                  Deactivate
                 </button>
               </div>
             </div>
@@ -129,22 +154,22 @@ export default function Home() {
               <h1 className="style-title">Crystal Effect</h1>
             </div>
           )}
-          {selectedStyle === 10 && (
+          {selectedStyle === 22 && (
             <div className="title-overlay">
-              <h1 className="style-title">Exhale Wave</h1>
+              <h1 className="style-title">Hologram Effect</h1>
             </div>
           )}
         </div>
 
-        {/* 하단 1-10 버튼 */}
-        <div className="version-switcher-bottom" role="navigation" aria-label="Style Switcher 1-10">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+        {/* 하단 1-9, 2.2 버튼 */}
+        <div className="version-switcher-bottom" role="navigation" aria-label="Style Switcher 1-9, 2.2">
+          {[1, 2, 22, 3, 4, 5, 6, 7, 8, 9].map((num) => (
             <button
               key={num}
-              className={`ver-button ${selectedStyle === num ? 'active' : ''}`}
+              className={`ver-button ${selectedStyle === num ? 'active' : ''} ${num === 6 || num === 7 ? 'red-button' : ''} ${num === 4 || num === 5 ? 'blue-button' : ''}`}
               onClick={() => handleStyleChange(num)}
             >
-              {num}
+              {num === 22 ? '2.2' : num}
             </button>
           ))}
         </div>
@@ -167,26 +192,61 @@ export default function Home() {
           margin-top: 10px;
           display: flex;
           justify-content: center;
+          gap: 10px;
         }
 
         .toggle-btn {
           padding: 8px 16px;
-          background: #4ecdc4;
+          background: #888888;
           color: white;
           border: none;
           border-radius: 6px;
           cursor: pointer;
           font-size: 14px;
           font-weight: 600;
-          transition: background-color 0.3s ease;
+          transition: all 0.3s ease;
         }
 
-        .toggle-btn.active {
-          background: #ff6b6b;
+
+        .activate-btn.active {
+          background: #000000;
+        }
+
+        .deactivate-btn.active {
+          background: #000000;
         }
 
         .toggle-btn:hover {
           opacity: 0.8;
+          transform: scale(1.05);
+        }
+
+        .red-button {
+          background: #ff9999 !important;
+          color: white !important;
+        }
+
+        .red-button:hover {
+          background: #ff7777 !important;
+        }
+
+        .red-button.active {
+          background: #ff0000 !important;
+          box-shadow: 0 0 15px rgba(255, 0, 0, 0.7);
+        }
+
+        .blue-button {
+          background: #87ceeb !important;
+          color: white !important;
+        }
+
+        .blue-button:hover {
+          background: #5dade2 !important;
+        }
+
+        .blue-button.active {
+          background: #0077be !important;
+          box-shadow: 0 0 15px rgba(0, 119, 190, 0.7);
         }
 
 

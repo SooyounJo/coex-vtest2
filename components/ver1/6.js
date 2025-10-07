@@ -17,15 +17,17 @@ export default function ShaderBubble6({ isActive = false }) {
         camZ: { value: 6.0 },
         zoomActive: { value: 0.0 },
         transitionProgress: { value: 0 },
+        scaleFactor: { value: 1.0 }, // 구 크기 조절
       },
     vertexShader: `
+      uniform float scaleFactor;
       varying vec2 vUv;
       varying vec3 vNormal;
       varying vec3 vWorldPos;
       void main() {
         vUv = uv;
         vNormal = normalize(normalMatrix * normal);
-        vec4 worldPos = modelMatrix * vec4(position, 1.0);
+        vec4 worldPos = modelMatrix * vec4(position * scaleFactor, 1.0);
         vWorldPos = worldPos.xyz;
         gl_Position = projectionMatrix * viewMatrix * worldPos;
       }
@@ -63,13 +65,13 @@ export default function ShaderBubble6({ isActive = false }) {
         float ripple1=noise(vUv*3.0+time*0.5)*0.05; float ripple2=noise(vUv*5.0+time*0.3)*0.025; float ripple3=noise(vUv*7.0+time*0.7)*0.015; float totalRipple=ripple1+ripple2+ripple3;
         float elastic1=elasticWave(topness*2.0+time*0.4,3.0,0.08); float elastic2=elasticWave(topness*3.0+time*0.6,2.0,0.04); float totalElastic=elastic1+elastic2;
         
-        // 물방울 효과 (트랜지션 적용)
-        float drop1=sin(time*2.0)*0.3+0.5; float drop2=sin(time*1.7+1.5)*0.25+0.5; float drop3=sin(time*2.3+3.1)*0.2+0.5;
+        // 물방울 효과 (트랜지션 적용) - 극적으로 강화
+        float drop1=sin(time*3.0)*0.3+0.5; float drop2=sin(time*2.5+1.5)*0.25+0.5; float drop3=sin(time*3.5+3.1)*0.2+0.5;
         float dist1=length(vUv-vec2(0.2,drop1)); float dist2=length(vUv-vec2(-0.3,drop2)); float dist3=length(vUv-vec2(0.4,drop3));
-        float waterRipple1=sin(dist1*20.0-time*15.0)*exp(-dist1*8.0)*0.1; float waterRipple2=sin(dist2*18.0-time*12.0)*exp(-dist2*6.0)*0.08; float waterRipple3=sin(dist3*22.0-time*18.0)*exp(-dist3*7.0)*0.09; 
-        float totalWaterRipple = (waterRipple1 + waterRipple2 + waterRipple3) * transitionProgress;
-        float waterElastic1=elasticWave(topness*2.0+time*0.4,3.0,0.15); float waterElastic2=elasticWave(topness*3.0+time*0.6,2.0,0.08); 
-        float totalWaterElastic = (waterElastic1 + waterElastic2) * transitionProgress;
+        float waterRipple1=sin(dist1*25.0-time*20.0)*exp(-dist1*6.0)*0.15; float waterRipple2=sin(dist2*22.0-time*16.0)*exp(-dist2*5.0)*0.12; float waterRipple3=sin(dist3*28.0-time*22.0)*exp(-dist3*6.5)*0.13; 
+        float totalWaterRipple = (waterRipple1 + waterRipple2 + waterRipple3) * (1.0 - transitionProgress);
+        float waterElastic1=elasticWave(topness*2.0+time*0.6,3.5,0.25); float waterElastic2=elasticWave(topness*3.0+time*0.8,2.5,0.15); 
+        float totalWaterElastic = (waterElastic1 + waterElastic2) * (1.0 - transitionProgress);
         
         // 기본 효과와 물방울 효과 결합
         float blurAmount=0.01; 
@@ -86,18 +88,18 @@ export default function ShaderBubble6({ isActive = false }) {
         vec3 lit=base; lit=mix(lit,flowColor,flowMaskAvg*0.4);
         vec3 rippleColor=vec3(0.8,0.4,0.6)*totalRipple*0.2; vec3 elasticColor=vec3(0.8,0.3,0.7)*totalElastic*0.15; lit+=rippleColor+elasticColor;
         
-        // 물방울 색상 효과 추가
-        vec3 waterColor = vec3(0.6, 0.8, 1.0) * (totalWaterRipple + totalWaterElastic) * 0.3;
+        // 물방울 색상 효과 추가 - 극적으로 강화
+        vec3 waterColor = vec3(0.4, 0.6, 1.0) * (totalWaterRipple + totalWaterElastic) * 0.6;
         lit += waterColor;
         
         vec3 V=vec3(0.0,0.0,1.0); float fres=pow(1.0 - max(dot(N,V),0.0),2.6); vec3 rimGlow=vec3(0.8,0.3,0.7)*fres*0.3; float softHalo=smoothstep(0.34,0.10,r)*0.08; vec3 glow=rimGlow + vec3(0.8,0.4,0.8)*softHalo; lit+=glow;
         lit+=vec3(0.8,0.2,0.6)*(1.0-topness)*0.1; vec3 gray=vec3(dot(lit,vec3(0.299,0.587,0.114)));
         float loopPhase = 0.5 + 0.5 * sin(6.28318530718 * time / 7.0);
-        float sat = 1.0 + 0.85 * loopPhase;
+        float sat = 1.0 + 0.85 * loopPhase + (1.0 - transitionProgress) * 0.5; // 액티브 시 채도 높게
         lit = mix(gray, lit, sat);
-        float brightness = 1.0 + 0.14 * loopPhase;
+        float brightness = 1.0 + 0.14 * loopPhase; // 밝기는 1번과 동일하게 유지
         lit *= brightness;
-        float contrast = 1.0 + 0.32 * loopPhase;
+        float contrast = 1.0 + 0.32 * loopPhase; // 대비도 1번과 동일하게 유지
         lit = (lit - 0.5) * contrast + 0.5;
 
         // 상하 이동에 따른 채도/밝기 조절 (위로 갈수록 진하고, 아래로 갈수록 연하게)
@@ -135,28 +137,35 @@ export default function ShaderBubble6({ isActive = false }) {
     transparent: true,
   }), [])
 
-  // 3초 트랜지션 효과
+  // 2초 자연스러운 트랜지션 효과
   useEffect(() => {
     setIsTransitioning(true)
     const startTime = Date.now()
-    const duration = 3000 // 3초
+    const duration = 2000 // 2초
     
-    // 초기값 설정
-    setTransitionProgress(isActive ? 0 : 1)
-    material.uniforms.transitionProgress.value = isActive ? 0 : 1
+    // 초기값 설정 - 처음 버튼을 누르면 1(움직임 없는 1 상태)로 시작
+    setTransitionProgress(isActive ? 1 : 1)
+    material.uniforms.transitionProgress.value = isActive ? 1 : 1
     
     const animate = () => {
       const elapsed = Date.now() - startTime
       const progress = Math.min(elapsed / duration, 1)
       
-      // 부드러운 이징 함수 (ease-in-out cubic)
+      // 더 자연스러운 이징 함수 (ease-out cubic)
       const easedProgress = progress < 0.5 
         ? 4 * progress * progress * progress
         : 1 - Math.pow(-2 * progress + 2, 3) / 2
       
-      const targetProgress = isActive ? easedProgress : 1 - easedProgress
+      // 처음 버튼을 누르면 1(움직임 없는 1 상태)에서 0(물방울 효과)으로 전환
+      const targetProgress = isActive ? 1 - easedProgress : 1
       setTransitionProgress(targetProgress)
       material.uniforms.transitionProgress.value = targetProgress
+      
+      // 액티브될 때 구가 살짝 줄어드는 효과
+      const scaleTarget = isActive ? 0.85 : 1.0 // 액티브 시 85% 크기
+      const currentScale = material.uniforms.scaleFactor.value
+      const newScale = currentScale + (scaleTarget - currentScale) * 0.1 // 부드러운 스케일 전환
+      material.uniforms.scaleFactor.value = newScale
       
       if (progress < 1) {
         requestAnimationFrame(animate)
