@@ -113,9 +113,12 @@ export default function Type2() {
   const smallRefs = [useRef(), useRef(), useRef(), useRef(), useRef()]
   const { viewport } = useThree()
   const v = viewport.getCurrentViewport()
-  const radius = Math.min(v.width, v.height) * 0.33
-  const margin = v.height * 0.035
-  const yBottom = -v.height / 2 + radius + margin
+  
+  // ver3 모달에서 항상 모바일 크기로 렌더링 (하단 잘리도록)
+  const isVer3 = typeof window !== 'undefined' && window.location.pathname === '/ver3'
+  const radius = Math.min(v.width, v.height) * (isVer3 ? 0.8 : 0.33)
+  const margin = isVer3 ? v.height * 0.01 : v.height * 0.035
+  const yBottom = isVer3 ? -v.height / 2 + radius * 0.6 + margin : -v.height / 2 + radius + margin
 
   useFrame((state) => {
     const time = state.clock.elapsedTime
@@ -141,29 +144,40 @@ export default function Type2() {
         const radiusSpring = 1.0 + Math.sin(springPhase) * 0.15 + Math.sin(springPhase * 1.5) * 0.05
         const dynamicOrbitRadius = orbitRadius * radiusSpring
         
-        if (cycle < 0.75) {
-          // 0-6초: Z축 기준 공전 (Spring 효과 적용)
+        // 자연스러운 루프를 위한 연속적인 애니메이션
+        if (cycle < 0.7) {
+          // 0-5.6초: Z축 기준 공전 (Spring 효과 적용)
           const x = Math.cos(angle) * dynamicOrbitRadius
           const y = Math.sin(angle) * dynamicOrbitRadius
           const z = Math.sin(time * 2 + index) * 0.3 // 미세한 전후 움직임
           ref.current.position.set(x, y, z)
           ref.current.visible = true
-        } else {
-          // 6-8초: 메인 구 안으로 들어가기 (Spring 효과 유지)
-          const t = (cycle - 0.75) / 0.25 // 0-1
+        } else if (cycle < 0.85) {
+          // 5.6-6.8초: 메인 구 안으로 부드럽게 들어가기
+          const t = (cycle - 0.7) / 0.15 // 0-1
           const easeIn = t * t * (3.0 - 2.0 * t) // smoothstep
           
           const x = Math.cos(angle) * dynamicOrbitRadius * (1.0 - easeIn)
           const y = Math.sin(angle) * dynamicOrbitRadius * (1.0 - easeIn)
           const z = Math.sin(time * 2 + index) * 0.3 * (1.0 - easeIn)
           ref.current.position.set(x, y, z)
+          ref.current.visible = true
+        } else if (cycle < 0.95) {
+          // 6.8-7.6초: 메인 구 안에서 대기 (거의 중앙에 위치)
+          ref.current.position.set(0, 0, 0)
+          ref.current.visible = true
+        } else {
+          // 7.6-8초: 메인 구 밖으로 부드럽게 나오기 (다음 루프 시작)
+          const t = (cycle - 0.95) / 0.05 // 0-1
+          const easeOut = t * t * (3.0 - 2.0 * t) // smoothstep
           
-          // 크기는 유지하고 위치만 변화
-          ref.current.scale.setScalar(1.0)
-          
-          if (cycle > 0.95) {
-            ref.current.visible = false
-          }
+          // 다음 루프의 시작 위치로 부드럽게 전환
+          const nextAngle = angle + Math.PI * 2 // 한 바퀴 더 회전된 위치
+          const x = Math.cos(nextAngle) * dynamicOrbitRadius * easeOut
+          const y = Math.sin(nextAngle) * dynamicOrbitRadius * easeOut
+          const z = Math.sin(time * 2 + index) * 0.3 * easeOut
+          ref.current.position.set(x, y, z)
+          ref.current.visible = true
         }
       }
     })

@@ -9,6 +9,7 @@ export default function Type1() {
       lightDir: { value: new THREE.Vector3(0.2, 0.9, 0.3).normalize() },
       ringDir: { value: new THREE.Vector3(0.08, 0.56, 0.86).normalize() },
       rotationPhase: { value: 0.0 },
+      isVer3: { value: 0.0 }, // ver3 모달 여부
     },
         vertexShader: `
           uniform float time;
@@ -35,9 +36,8 @@ export default function Type1() {
             float sinAngle = abs(sin(angle));
             float squareRadius = max(cosAngle, sinAngle);
             
-            // 완전한 정사각형 변형 (초기 설정대로)
-            // 기본 정사각형 변형만 적용 (완전한 정사각형)
-            squareRadius = squareRadius;
+            // 정사각형 변형 시 크기 보정 (원형과 비슷한 크기 유지)
+            squareRadius = squareRadius * 1.414; // sqrt(2)로 크기 보정
             
             vec2 squareXY = xy / max(radius, 0.001) * squareRadius;
             
@@ -101,6 +101,7 @@ export default function Type1() {
       uniform float time;
       uniform vec3 lightDir;
       uniform vec3 ringDir;
+      uniform float isVer3;
       varying vec2 vUv;
       varying vec3 vNormal;
 
@@ -184,8 +185,8 @@ export default function Type1() {
             
             float perturb = 0.01 * n2(vUv * 1.5 + time * 0.05);
             
-            // 블러 효과 (약화)
-            float blurAmount = 0.02;
+            // 블러 효과 (ver3 모달에서는 더 강하게)
+            float blurAmount = isVer3 > 0.5 ? 0.05 : 0.02;
             float f1 = topness * scale + phase + totalRipple + totalElastic;
             float f2 = topness * scale + phase + blurAmount + totalRipple * 0.8 + totalElastic * 0.6;
             float f3 = topness * scale + phase + (blurAmount * 1.5) + totalRipple * 0.6 + totalElastic * 0.4;
@@ -266,17 +267,21 @@ export default function Type1() {
     
     // 회전 애니메이션 제거 - rotationPhase를 0으로 고정
     material.uniforms.rotationPhase.value = 0.0
+    
+    // ver3 모달 여부 설정
+    material.uniforms.isVer3.value = isVer3 ? 1.0 : 0.0
   })
 
   const meshRef = useRef()
   const { camera, viewport } = useThree()
   const v = viewport.getCurrentViewport(camera, [0, 0, 0])
 
-  const radius = Math.min(v.width, v.height) * (window.innerWidth <= 768 ? 0.5 : 0.33)
-  const margin = v.height * 0.035
-  const yBottom = window.innerWidth <= 768 ? 
-    -v.height / 2 + radius + margin : 
-    -v.height / 2 + radius + margin
+  // ver3 모달에서 항상 모바일 크기로 렌더링 (하단 잘리도록)
+  const isVer3 = typeof window !== 'undefined' && window.location.pathname === '/ver3'
+  const radius = Math.min(v.width, v.height) * (isVer3 ? 0.8 : (window.innerWidth <= 768 ? 0.5 : 0.33))
+  const margin = isVer3 ? v.height * 0.01 : v.height * 0.035
+  const yBottom = isVer3 ? -v.height / 2 + radius * 0.6 + margin : 
+    (window.innerWidth <= 768 ? -v.height / 2 + radius + margin : -v.height / 2 + radius + margin)
 
   return (
     <mesh ref={meshRef} position={[0, yBottom, 0]}>

@@ -96,8 +96,8 @@ export default function AgenticBubble({ styleType = 6, cameraMode = 'default' })
     // 더 넓은 진폭과 개선된 스프링 애니메이션
     const periodZoom = 8 // 초 (더 빠른 주기)
     const periodMove = 8 // 초 (더 빠른 주기)
-    const ampZ = 1.2 // z 진폭 (더 넓게)
-    const ampY = 0.4 // y 진폭 (더 넓게)
+    const ampZ = 2.0 // z 진폭 (더 강하게)
+    const ampY = 0.8 // y 진폭 (더 강하게)
 
     // 스프링 기반 타겟 계산 (빠르게 들어가고 천천히 나오는 이징)
     let targetZ = baseZ

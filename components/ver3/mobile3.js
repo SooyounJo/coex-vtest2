@@ -108,19 +108,19 @@ export default function Mobile3() {
         float loopT=mod(time,loopSec)/loopSec; 
         float phase=-loopT;
         
-        // 홀로그램 웨이브 효과
-        float waveSpeed = 5.5;
-        float waveFreq = 35.0;
-        float outwardWave = sin(r * waveFreq - time * waveSpeed) * 0.02 * (1.0 - r);
+        // 홀로그램 웨이브 효과 (덜 격렬하게)
+        float waveSpeed = 3.0;
+        float waveFreq = 25.0;
+        float outwardWave = sin(r * waveFreq - time * waveSpeed) * 0.015 * (1.0 - r);
         
-        float ripple1=noise(vUv*3.0+time*0.5)*0.05; 
-        float ripple2=noise(vUv*5.0+time*0.3)*0.025; 
-        float ripple3=noise(vUv*7.0+time*0.7)*0.015; 
-        float totalRipple=(ripple1+ripple2+ripple3)*3.0;
+        float ripple1=noise(vUv*3.0+time*0.3)*0.03; 
+        float ripple2=noise(vUv*5.0+time*0.2)*0.015; 
+        float ripple3=noise(vUv*7.0+time*0.4)*0.01; 
+        float totalRipple=(ripple1+ripple2+ripple3)*2.0;
         
-        float elastic1=elasticWave(topness*2.0+time*0.4,3.0,0.08); 
-        float elastic2=elasticWave(topness*3.0+time*0.6,2.0,0.04); 
-        float totalElastic=(elastic1+elastic2)*2.8;
+        float elastic1=elasticWave(topness*2.0+time*0.2,2.5,0.05); 
+        float elastic2=elasticWave(topness*3.0+time*0.3,1.8,0.03); 
+        float totalElastic=(elastic1+elastic2)*1.8;
         
         float blurAmount=0.01; 
         float f1=topness*1.8+phase+totalRipple+totalElastic+outwardWave*0.35; 

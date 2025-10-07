@@ -108,11 +108,11 @@ export default function Mobile2() {
         float loopT=mod(time,loopSec)/loopSec; 
         float phase=-loopT;
         
-        // 물방울 효과
-        float waterRipple1=sin(vUv.x*8.0+time*2.0)*0.03; 
-        float waterRipple2=sin(vUv.y*6.0+time*1.5)*0.02; 
-        float waterElastic1=elasticWave(topness*3.0+time*0.8,4.0,0.06); 
-        float waterElastic2=elasticWave(topness*4.0+time*1.2,3.0,0.04); 
+        // 물방울 효과 (덜 격렬하게)
+        float waterRipple1=sin(vUv.x*6.0+time*1.0)*0.02; 
+        float waterRipple2=sin(vUv.y*4.0+time*0.8)*0.015; 
+        float waterElastic1=elasticWave(topness*3.0+time*0.4,3.0,0.04); 
+        float waterElastic2=elasticWave(topness*4.0+time*0.6,2.5,0.03); 
         float totalWaterRipple=waterRipple1+waterRipple2; 
         float totalWaterElastic=waterElastic1+waterElastic2;
         

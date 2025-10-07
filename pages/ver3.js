@@ -2,11 +2,16 @@ import { useState, useEffect } from 'react'
 import Head from 'next/head'
 import { Canvas } from '@react-three/fiber'
 import Mobile1 from '../components/ver3/mobile1'
-import Empty2 from '../components/ver3/empty2'
-import Empty3 from '../components/ver3/empty3'
+import Mobile2 from '../components/ver3/mobile2'
+import Mobile3 from '../components/ver3/mobile3'
 import ShaderBubble from '../components/ver1/1'
 import ShaderBubble2 from '../components/ver1/2'
 import ShaderBubble3 from '../components/ver1/3'
+import ShaderBubble4 from '../components/ver1/4'
+import ShaderBubble5 from '../components/ver1/5'
+import Type1 from '../components/ver2/type1'
+import Type2 from '../components/ver2/type2'
+import Type3 from '../components/ver2/type3'
 import { useRouter } from 'next/router'
 
 export default function Ver3() {
@@ -33,6 +38,10 @@ export default function Ver3() {
 
   const handleMobileChange = (mobile) => {
     setSelectedMobile(mobile)
+    // M2로 변경할 때는 상단 버튼을 1번으로 리셋
+    if (mobile === 2) {
+      setSelectedStyle(1)
+    }
   }
 
   return (
@@ -55,9 +64,9 @@ export default function Ver3() {
         </div>
         
         <div className="modal-container">
-          {/* 상단 버튼 */}
+          {/* 상단 버튼 - M2일 때는 2개만 표시 */}
           <div className="top-buttons">
-            {[1, 2, 3].map((num) => (
+            {(selectedMobile === 2 ? [1, 2] : [1, 2, 3]).map((num) => (
               <button
                 key={num}
                 className={`top-button ${selectedStyle === num ? 'active' : ''}`}
@@ -67,6 +76,15 @@ export default function Ver3() {
               </button>
             ))}
           </div>
+
+          {/* 헤더 (M2일 때만 표시) */}
+          {selectedMobile === 2 && (
+            <div className="header-container">
+              <h2 className="header-title">
+                {selectedStyle === 1 ? "Zoom In/Out" : "Up/Down"}
+              </h2>
+            </div>
+          )}
 
           {/* 3D Canvas */}
           <div className="canvas-container">
@@ -79,15 +97,25 @@ export default function Ver3() {
               <color attach="background" args={["#ffffff"]} />
               <ambientLight intensity={0.3} />
               <directionalLight position={[2, 3, 2]} intensity={0.5} />
-              {/* 상단 버튼이 선택된 경우 ver1 컴포넌트 렌더링 */}
-              {selectedStyle === 1 ? <ShaderBubble /> : 
-               selectedStyle === 2 ? <ShaderBubble2 /> : 
-               selectedStyle === 3 ? <ShaderBubble3 /> : 
-               /* 하단 버튼이 선택된 경우 mobile 컴포넌트 렌더링 */
-               selectedMobile === 1 ? <Mobile1 /> : 
-               selectedMobile === 2 ? <Empty2 /> : 
-               selectedMobile === 3 ? <Empty3 /> : 
-               <Mobile1 />}
+              {/* M2일 때는 4.js, 5.js 적용, M3일 때는 type1-3 적용, M1일 때는 기존 로직 */}
+              {selectedMobile === 2 ? (
+                selectedStyle === 1 ? <ShaderBubble4 /> : 
+                selectedStyle === 2 ? <ShaderBubble5 /> : 
+                <ShaderBubble4 />
+              ) : selectedMobile === 3 ? (
+                selectedStyle === 1 ? <Type1 /> : 
+                selectedStyle === 2 ? <Type2 /> : 
+                selectedStyle === 3 ? <Type3 /> : 
+                <Type1 />
+              ) : (
+                /* M1일 때는 기존 로직 */
+                selectedStyle === 1 ? <ShaderBubble /> : 
+                selectedStyle === 2 ? <ShaderBubble2 /> : 
+                selectedStyle === 3 ? <ShaderBubble3 /> : 
+                /* 하단 버튼이 선택된 경우 mobile 컴포넌트 렌더링 */
+                selectedMobile === 1 ? <Mobile1 /> : 
+                <Mobile1 />
+              )}
             </Canvas>
             
           </div>
@@ -201,6 +229,21 @@ export default function Ver3() {
           box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
         }
 
+        .header-container {
+          padding: 15px 20px;
+          background: #f8f9fa;
+          border-bottom: 1px solid #eaeaea;
+          text-align: center;
+        }
+
+        .header-title {
+          margin: 0;
+          font-size: 18px;
+          font-weight: 600;
+          color: #333333;
+          letter-spacing: 0.5px;
+        }
+
 
         .canvas-container {
           flex: 1;
@@ -232,6 +275,9 @@ export default function Ver3() {
           font-weight: 600;
           transition: all 0.3s ease;
           min-width: 60px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
         .ver-button:hover {
@@ -275,6 +321,14 @@ export default function Ver3() {
             width: 36px;
             height: 36px;
             font-size: 14px;
+          }
+
+          .header-container {
+            padding: 12px 16px;
+          }
+
+          .header-title {
+            font-size: 16px;
           }
           
           .back-button-container {
@@ -328,6 +382,14 @@ export default function Ver3() {
             width: 32px;
             height: 32px;
             font-size: 13px;
+          }
+
+          .header-container {
+            padding: 10px 14px;
+          }
+
+          .header-title {
+            font-size: 15px;
           }
           
           .back-button-container {

@@ -84,10 +84,13 @@ export default function Type3() {
   const miniRefs = [useRef(), useRef(), useRef(), useRef(), useRef()]
   const { viewport } = useThree()
   const v = viewport.getCurrentViewport()
-  const radius = Math.min(v.width, v.height) * 0.33
+  
+  // ver3 모달에서 항상 모바일 크기로 렌더링 (하단 잘리도록)
+  const isVer3 = typeof window !== 'undefined' && window.location.pathname === '/ver3'
+  const radius = Math.min(v.width, v.height) * (isVer3 ? 0.8 : 0.33)
   const miniRadius = radius * 0.06 // 미니 구 크기를 더 작게 조정
-  const margin = v.height * 0.035
-  const yBottom = -v.height / 2 + radius + margin
+  const margin = isVer3 ? v.height * 0.01 : v.height * 0.035
+  const yBottom = isVer3 ? -v.height / 2 + radius * 0.6 + margin : -v.height / 2 + radius + margin
 
   useFrame((state) => {
     const time = state.clock.elapsedTime
@@ -96,6 +99,9 @@ export default function Type3() {
     // 6초 주기 애니메이션 (돌고>모이고>퍼지고의 자연스러운 루프)
     const cycle = (time % 6.0) / 6.0
     const orbitRadius = 1.0 // 더 가까운 간격으로 조정
+    
+    // ver3 모달에서는 미니 구들을 더 불투명하게
+    const baseAlpha = isVer3 ? 1.2 : 1.0
 
     miniRefs.forEach((ref, index) => {
       if (ref.current) {
@@ -111,7 +117,7 @@ export default function Type3() {
           ref.current.position.set(x, y, z)
           ref.current.visible = true
           ref.current.scale.setScalar(1.0)
-          miniMaterial.uniforms.alpha.value = 1.0
+          miniMaterial.uniforms.alpha.value = baseAlpha
         } else if (cycle < 0.6) {
           // 2.4-3.6초: 중심으로 모이는 애니메이션 (부드럽게)
           const t = (cycle - 0.4) / 0.2 // 0-1
@@ -123,7 +129,7 @@ export default function Type3() {
           
           ref.current.position.set(x, y, z)
           ref.current.scale.setScalar(1.0)
-          miniMaterial.uniforms.alpha.value = 1.0
+          miniMaterial.uniforms.alpha.value = baseAlpha
         } else {
           // 3.6-6초: 다시 퍼져나가는 애니메이션 (자연스럽게)
           const t = (cycle - 0.6) / 0.4 // 0-1
@@ -135,7 +141,7 @@ export default function Type3() {
           
           ref.current.position.set(x, y, z)
           ref.current.scale.setScalar(1.0)
-          miniMaterial.uniforms.alpha.value = 1.0
+          miniMaterial.uniforms.alpha.value = baseAlpha
         }
       }
     })
