@@ -17,8 +17,6 @@ export default function Home() {
   const [selectedStyle, setSelectedStyle] = useState(1)
   const [isActive6, setIsActive6] = useState(false)
   const [isActive7, setIsActive7] = useState(false)
-  const [isActive8, setIsActive8] = useState(false)
-  const [isActive9, setIsActive9] = useState(false)
   const router = useRouter()
 
   // URL 파라미터 처리
@@ -63,8 +61,8 @@ export default function Home() {
              selectedStyle === 5 ? <ShaderBubble5 /> : 
                  selectedStyle === 6 ? <ShaderBubble6 isActive={isActive6} /> :
                  selectedStyle === 7 ? <ShaderBubble7 isActive={isActive7} /> :
-                 selectedStyle === 8 ? <ShaderBubble8 isActive={isActive8} /> :
-                 selectedStyle === 9 ? <ShaderBubble9 isActive={isActive9} /> :
+                 selectedStyle === 8 ? <ShaderBubble8 isActive={true} /> :
+                 selectedStyle === 9 ? <ShaderBubble9 isActive={true} /> :
                  selectedStyle === 10 ? <ShaderBubble10 /> :
                  <ShaderBubble />}
           </Canvas>
@@ -108,50 +106,34 @@ export default function Home() {
               </div>
             </div>
           )}
-              {selectedStyle === 7 && (
-                <div className="title-overlay">
-                  <h1 className="style-title">Hologram Wave</h1>
-                  <div className="toggle-controls">
-                    <button 
-                      className={`toggle-btn ${isActive7 ? 'active' : ''}`}
-                      onClick={() => setIsActive7(!isActive7)}
-                    >
-                      {isActive7 ? 'Deactivate' : 'Activate'}
-                    </button>
-                  </div>
-                </div>
-              )}
-              {selectedStyle === 8 && (
-                <div className="title-overlay">
-                  <h1 className="style-title">Aurora Effect</h1>
-                  <div className="toggle-controls">
-                    <button 
-                      className={`toggle-btn ${isActive8 ? 'active' : ''}`}
-                      onClick={() => setIsActive8(!isActive8)}
-                    >
-                      {isActive8 ? 'Deactivate' : 'Activate'}
-                    </button>
-                  </div>
-                </div>
-              )}
-              {selectedStyle === 9 && (
-                <div className="title-overlay">
-                  <h1 className="style-title">Crystal Effect</h1>
-                  <div className="toggle-controls">
-                    <button 
-                      className={`toggle-btn ${isActive9 ? 'active' : ''}`}
-                      onClick={() => setIsActive9(!isActive9)}
-                    >
-                      {isActive9 ? 'Deactivate' : 'Activate'}
-                    </button>
-                  </div>
-                </div>
-              )}
-              {selectedStyle === 10 && (
-                <div className="title-overlay">
-                  <h1 className="style-title">Exhale Wave</h1>
-                </div>
-              )}
+          {selectedStyle === 7 && (
+            <div className="title-overlay">
+              <h1 className="style-title">Hologram Wave</h1>
+              <div className="toggle-controls">
+                <button 
+                  className={`toggle-btn ${isActive7 ? 'active' : ''}`}
+                  onClick={() => setIsActive7(!isActive7)}
+                >
+                  {isActive7 ? 'Deactivate' : 'Activate'}
+                </button>
+              </div>
+            </div>
+          )}
+          {selectedStyle === 8 && (
+            <div className="title-overlay">
+              <h1 className="style-title">Aurora Effect</h1>
+            </div>
+          )}
+          {selectedStyle === 9 && (
+            <div className="title-overlay">
+              <h1 className="style-title">Crystal Effect</h1>
+            </div>
+          )}
+          {selectedStyle === 10 && (
+            <div className="title-overlay">
+              <h1 className="style-title">Exhale Wave</h1>
+            </div>
+          )}
         </div>
 
         {/* 하단 1-10 버튼 */}

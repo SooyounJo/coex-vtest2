@@ -55,7 +55,7 @@ export default function ShaderBubble10() {
         vec3 base=mix(pink,peach,clamp(0.5+0.5*topness,0.0,1.0)); base=mix(base,purple,smoothstep(0.0,0.35,1.0-topness));
         float loopSec=10.0; float loopT=mod(time,loopSec)/loopSec; float phase=-loopT;
         
-        // 방향 반전: 밖에서 안으로 빨려들어가는 듯한 외호흡 파동
+        // 밖→안 파동
         float waveSpeed = 1.6;
         float waveFreq  = 14.0;
         float radial = sin(waveFreq * r + waveSpeed * time);
@@ -83,6 +83,16 @@ export default function ShaderBubble10() {
         float loopPhase = 0.5 + 0.5 * sin(6.28318530718 * time / 7.0); float sat = 1.0 + 0.85 * loopPhase; lit = mix(gray, lit, sat);
         float brightness = 1.0 + 0.14 * loopPhase; lit *= brightness; float contrast = 1.0 + 0.32 * loopPhase; lit = (lit - 0.5) * contrast + 0.5;
         lit=pow(lit,vec3(0.9)); lit*=1.05; lit=mix(lit,vec3(1.0),0.02); lit=clamp(lit,0.0,1.0);
+        
+        // 미세 더스트 (저비용 노이즈 기반 하이라이트)
+        float d1 = n2(vUv * 120.0 + time * 0.6);
+        float d2 = n2(vUv * 200.0 - time * 0.45);
+        float dust = smoothstep(0.94, 0.985, max(d1, d2)); // 희박한 밀도
+        // 중심부는 살짝 줄이고 가장자리 쪽에 더 보이도록 가중
+        float rim = smoothstep(0.15, 0.75, r);
+        float dustMask = dust * rim;
+        lit += vec3(1.0, 0.98, 1.0) * dustMask * 0.06; // 은은한 반짝임
+        
         float edgeFeather=smoothstep(0.52,0.36,r); float alpha=0.90*edgeFeather + fres*0.15; alpha=clamp(alpha,0.0,1.0);
         gl_FragColor=vec4(lit,alpha);
       }

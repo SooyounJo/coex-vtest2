@@ -110,18 +110,25 @@ export default function ShaderBubble9({ isActive = false }) {
         vec3 waveTint = vec3(0.85, 0.55, 0.95);
         lit += waveTint * smoothstep(0.2, 1.0, r) * outwardWave * 0.18;
         
-        // 채도는 고정, 명도만 약하게 변화
-        float brightnessWave = 1.0 + 0.12 * sin(6.28318530718 * time / 7.0);
-        lit *= brightnessWave;
+        // 항상 밝고 높은 채도 유지: 채도 살짝 증폭 + 최소 밝기 보정
+        float lum = dot(lit, vec3(0.299, 0.587, 0.114));
+        vec3 chroma = lit - vec3(lum);
+        lit = vec3(lum) + chroma * 1.20; // 채도 강화
+        lit = max(lit, vec3(0.14));      // 바닥 밝기 약간 상승
+        lit = clamp(lit, 0.0, 1.0);
         
+        // 오퍼시티만 숨쉬듯 변동 (밝기/채도는 고정)
         vec3 V=vec3(0.0,0.0,1.0); float fres=pow(1.0 - max(dot(N,V),0.0),2.6);
-        float edgeFeather=smoothstep(0.52,0.36,r); float alpha=0.90*edgeFeather + fres*0.15; alpha=clamp(alpha,0.0,1.0);
+        float edgeFeather=smoothstep(0.52,0.36,r); float baseAlpha=0.90*edgeFeather + fres*0.15;
+        float opacityWave = 0.70 + 0.25 * sin(6.28318530718 * time / 7.0); // 0.45~0.95 범위
+        float alpha = clamp(baseAlpha * opacityWave, 0.0, 1.0);
         gl_FragColor=vec4(lit,alpha);
       }
     `,
     transparent: true,
   }), [])
 
+  // 3초 트랜지션 (색/파동 강도 동기감)
   useEffect(() => {
     setIsTransitioning(true)
     const startTime = Date.now()
