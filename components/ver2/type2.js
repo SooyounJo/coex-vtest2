@@ -124,27 +124,37 @@ export default function Type2() {
 
     // 작은 구들의 애니메이션 (8초 주기)
     const cycle = (time % 8.0) / 8.0
-    const orbitRadius = 2.0
+    const orbitRadius = 1.8 // 메인 구로부터 적당한 거리로 조정
     const smallRadius = radius * 0.15
 
     smallRefs.forEach((ref, index) => {
       if (ref.current) {
-        const angle = (cycle * Math.PI * 2) + (index * Math.PI * 2 / 5) // 72도씩 차이
+        // 통일된 loop 기반 각도 계산
+        const baseAngle = (cycle * Math.PI * 2) + (index * Math.PI * 2 / 5) // 72도씩 차이
+        
+        // 통일된 spring 효과 (모든 구가 같은 패턴)
+        const springPhase = cycle * Math.PI * 4 // 8초 주기에 맞춘 2번의 spring 주기
+        const springAngle = Math.sin(springPhase) * 0.2 + Math.sin(springPhase * 2) * 0.1
+        const angle = baseAngle + springAngle
+        
+        // 통일된 반지름 변화 (모든 구가 같은 패턴)
+        const radiusSpring = 1.0 + Math.sin(springPhase) * 0.15 + Math.sin(springPhase * 1.5) * 0.05
+        const dynamicOrbitRadius = orbitRadius * radiusSpring
         
         if (cycle < 0.75) {
-          // 0-6초: Z축 기준 공전
-          const x = Math.cos(angle) * orbitRadius
-          const y = Math.sin(angle) * orbitRadius
+          // 0-6초: Z축 기준 공전 (Spring 효과 적용)
+          const x = Math.cos(angle) * dynamicOrbitRadius
+          const y = Math.sin(angle) * dynamicOrbitRadius
           const z = Math.sin(time * 2 + index) * 0.3 // 미세한 전후 움직임
           ref.current.position.set(x, y, z)
           ref.current.visible = true
         } else {
-          // 6-8초: 메인 구 안으로 들어가기
+          // 6-8초: 메인 구 안으로 들어가기 (Spring 효과 유지)
           const t = (cycle - 0.75) / 0.25 // 0-1
           const easeIn = t * t * (3.0 - 2.0 * t) // smoothstep
           
-          const x = Math.cos(angle) * orbitRadius * (1.0 - easeIn)
-          const y = Math.sin(angle) * orbitRadius * (1.0 - easeIn)
+          const x = Math.cos(angle) * dynamicOrbitRadius * (1.0 - easeIn)
+          const y = Math.sin(angle) * dynamicOrbitRadius * (1.0 - easeIn)
           const z = Math.sin(time * 2 + index) * 0.3 * (1.0 - easeIn)
           ref.current.position.set(x, y, z)
           

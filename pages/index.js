@@ -81,6 +81,12 @@ export default function Home() {
           >
             Ver.2
           </button>
+          <button 
+            className="version-btn mobile-btn"
+            onClick={() => router.push('/ver3')}
+          >
+            Mobile
+          </button>
         </div>
 
         {/* 3D Canvas */}
@@ -267,6 +273,17 @@ export default function Home() {
           border-color: #222222;
           border-radius: 20px;
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .mobile-btn {
+          background: #4CAF50 !important;
+          color: white !important;
+          border-color: #45a049 !important;
+        }
+
+        .mobile-btn:hover {
+          background: #45a049 !important;
+          border-color: #3d8b40 !important;
         }
 
         .canvas-container {
