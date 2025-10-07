@@ -151,7 +151,8 @@ export default function EmotionList({ onColorChange }) {
       opacity: opacity,
       color: color, // 거리에 따라 점진적으로 진해지는 색상
       fontWeight: 'bold', // 모든 아이템 볼드체
-      fontSize: `${fontSize}px`, // 계산된 폰트 사이즈 (최소 20px, 최대 40px)
+      fontSize: `${fontSize}px`, // 계산된 폰트 사이즈 (최소 12px, 최대 48px)
+      fontFamily: "'Noto Sans KR', sans-serif", // LG 폰트 적용
       textAlign: 'left', // 좌측 정렬
       height: `${itemHeight}px`,
       display: 'flex',

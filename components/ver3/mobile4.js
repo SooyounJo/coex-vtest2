@@ -178,6 +178,15 @@ export default function Mobile4({ emotionColor = '#FF6B6B', emotionCategory = 'v
         float alpha = 0.80*edgeFeather + fres*0.10;
         alpha = clamp(alpha,0.0,0.96);
         
+        // 레드 스트로크 효과 (외곽에 살짝 보이는 레드 테두리)
+        float strokeWidth = 0.05;
+        float strokeInner = smoothstep(0.52 - strokeWidth, 0.52, r);
+        float strokeOuter = smoothstep(0.52, 0.52 + strokeWidth, r);
+        float strokeMask = strokeInner * strokeOuter;
+        
+        vec3 redStroke = vec3(0.8, 0.2, 0.2); // 레드 색상
+        lit = mix(lit, redStroke, strokeMask * 0.3); // 레드 스트로크 적용
+        
         gl_FragColor = vec4(lit,alpha);
       }
     `,
