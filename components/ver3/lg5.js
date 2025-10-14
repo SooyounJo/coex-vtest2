@@ -14,13 +14,62 @@ export default function AgenticBubble({ styleType = 6, cameraMode = 'default' })
       zoomActive: { value: 0.0 },
     },
     vertexShader: `
+      uniform float time;
       varying vec2 vUv;
       varying vec3 vNormal;
       varying vec3 vWorldPos;
+      
+      // 츄러스 요철을 위한 노이즈 함수
+      float noise(vec3 p) {
+        return fract(sin(dot(p, vec3(12.9898, 78.233, 45.164))) * 43758.5453);
+      }
+      
+      // 부드러운 노이즈
+      float smoothNoise(vec3 p) {
+        vec3 i = floor(p);
+        vec3 f = fract(p);
+        f = f * f * (3.0 - 2.0 * f);
+        
+        float a = noise(i);
+        float b = noise(i + vec3(1.0, 0.0, 0.0));
+        float c = noise(i + vec3(0.0, 1.0, 0.0));
+        float d = noise(i + vec3(1.0, 1.0, 0.0));
+        float e = noise(i + vec3(0.0, 0.0, 1.0));
+        float f1 = noise(i + vec3(1.0, 0.0, 1.0));
+        float g = noise(i + vec3(0.0, 1.0, 1.0));
+        float h = noise(i + vec3(1.0, 1.0, 1.0));
+        
+        return mix(mix(mix(a, b, f.x), mix(c, d, f.x), f.y),
+                   mix(mix(e, f1, f.x), mix(g, h, f.x), f.y), f.z);
+      }
+      
       void main() {
         vUv = uv;
         vNormal = normalize(normalMatrix * normal);
-        vec4 worldPos = modelMatrix * vec4(position, 1.0);
+        
+        // 츄러스 같은 반복적인 요철 생성
+        vec3 pos = position;
+        
+        // UV 좌표를 사용해서 반복적인 패턴 생성
+        float u = uv.x;
+        float v = uv.y;
+        
+        // 츄러스의 세로 방향 요철 (V 방향)
+        float churroRidges = sin(v * 20.0 + time * 0.5) * 0.1;
+        churroRidges += sin(v * 40.0 + time * 0.8) * 0.05;
+        churroRidges += sin(v * 60.0 + time * 1.2) * 0.03;
+        
+        // 츄러스의 가로 방향 요철 (U 방향)
+        float churroBumps = sin(u * 15.0 + time * 0.3) * 0.08;
+        churroBumps += sin(u * 30.0 + time * 0.6) * 0.04;
+        
+        // 노이즈를 추가해서 더 자연스러운 요철
+        float noiseValue = smoothNoise(pos * 8.0 + time * 0.2) * 0.05;
+        
+        // 최종 변형 적용
+        pos += normal * (churroRidges + churroBumps + noiseValue);
+        
+        vec4 worldPos = modelMatrix * vec4(pos, 1.0);
         vWorldPos = worldPos.xyz;
         gl_Position = projectionMatrix * viewMatrix * worldPos;
       }
@@ -205,8 +254,8 @@ export default function AgenticBubble({ styleType = 6, cameraMode = 'default' })
 
   return (
     <>
-      <mesh ref={meshRef} position={[0, yBottom, 0]}>
-        <sphereGeometry args={[radius, 256, 256]} />
+      <mesh ref={meshRef} position={[0, yBottom, 0]} rotation={[Math.PI / 3, 0, 0]}>
+        <torusGeometry args={[radius * 1.0, radius * 0.4, 32, 64]} />
         <primitive object={material} attach="material" />
       </mesh>
     </>

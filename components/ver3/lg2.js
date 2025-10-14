@@ -4,6 +4,9 @@ import * as THREE from 'three'
 
 export default function AgenticBubble({ styleType = 6, cameraMode = 'default' }) {
   const [zoomLevel, setZoomLevel] = useState(2.5)
+  const [rotation, setRotation] = useState({ x: 0, y: 0 })
+  const [isDragging, setIsDragging] = useState(false)
+  const [lastMousePos, setLastMousePos] = useState({ x: 0, y: 0 })
   const material = useMemo(() => new THREE.ShaderMaterial({
     uniforms: {
       time: { value: 0 },
@@ -95,6 +98,42 @@ export default function AgenticBubble({ styleType = 6, cameraMode = 'default' })
     return () => window.removeEventListener('wheel', handleWheel)
   }, [])
 
+  // 마우스 드래그 이벤트 핸들러
+  useEffect(() => {
+    const handleMouseDown = (event) => {
+      setIsDragging(true)
+      setLastMousePos({ x: event.clientX, y: event.clientY })
+    }
+
+    const handleMouseMove = (event) => {
+      if (!isDragging) return
+      
+      const deltaX = event.clientX - lastMousePos.x
+      const deltaY = event.clientY - lastMousePos.y
+      
+      setRotation(prev => ({
+        x: prev.x + deltaY * 0.01,
+        y: prev.y + deltaX * 0.01
+      }))
+      
+      setLastMousePos({ x: event.clientX, y: event.clientY })
+    }
+
+    const handleMouseUp = () => {
+      setIsDragging(false)
+    }
+
+    window.addEventListener('mousedown', handleMouseDown)
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mouseup', handleMouseUp)
+    
+    return () => {
+      window.removeEventListener('mousedown', handleMouseDown)
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [isDragging, lastMousePos])
+
   useFrame((state, delta) => {
     material.uniforms.time.value += delta
     
@@ -173,7 +212,13 @@ export default function AgenticBubble({ styleType = 6, cameraMode = 'default' })
 
   return (
     <>
-      <mesh ref={meshRef} position={[0, yBottom, 0]} rotation={[0, 0, Math.PI / 4]} scale={[zoomLevel, zoomLevel, zoomLevel]}>
+      <mesh 
+        ref={meshRef} 
+        position={[0, yBottom, 0]} 
+        rotation={[rotation.x, rotation.y, Math.PI / 4]} 
+        scale={[zoomLevel, zoomLevel, zoomLevel]}
+        style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+      >
         <torusKnotGeometry args={[radius * 0.4, radius * 0.1, 128, 16, 2, 3]} />
         <primitive object={material} attach="material" />
       </mesh>

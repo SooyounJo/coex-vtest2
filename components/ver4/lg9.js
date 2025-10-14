@@ -5,145 +5,206 @@ import * as THREE from 'three'
 export default function AgenticBubble({ styleType = 9, cameraMode = 'default' }) {
   const meshRef = useRef()
   const [metaballs, setMetaballs] = useState([])
-  const [time, setTime] = useState(0)
-  
-  // Marching Cubes parameters
-  const resolution = 32
-  const size = 4
-  const threshold = 0.5
-  
-  // Create metaball data
+
+  // Create animated metaballs that emerge from and retract into the sphere
   useEffect(() => {
     const balls = []
     for (let i = 0; i < 8; i++) {
       balls.push({
-        x: (Math.random() - 0.5) * size,
-        y: (Math.random() - 0.5) * size,
-        z: (Math.random() - 0.5) * size,
-        radius: Math.random() * 0.8 + 0.2,
-        vx: (Math.random() - 0.5) * 0.02,
-        vy: (Math.random() - 0.5) * 0.02,
-        vz: (Math.random() - 0.5) * 0.02,
+        x: (Math.random() - 0.5) * 2,
+        y: (Math.random() - 0.5) * 2,
+        z: (Math.random() - 0.5) * 2,
+        radius: Math.random() * 0.3 + 0.2,
+        vx: (Math.random() - 0.5) * 0.01,
+        vy: (Math.random() - 0.5) * 0.01,
+        vz: (Math.random() - 0.5) * 0.01,
+        phase: Math.random() * Math.PI * 2, // For emergence timing
+        emergenceSpeed: Math.random() * 0.02 + 0.01,
+        color: new THREE.Color().setHSL(Math.random(), 0.8, 0.6)
       })
     }
     setMetaballs(balls)
   }, [])
 
-  // Marching Cubes implementation
-  const generateMetaballGeometry = useMemo(() => {
-    const vertices = []
-    const normals = []
-    const indices = []
-    
-    const step = size / resolution
-    const grid = new Array(resolution + 1)
-    
-    // Initialize grid
-    for (let x = 0; x <= resolution; x++) {
-      grid[x] = new Array(resolution + 1)
-      for (let y = 0; y <= resolution; y++) {
-        grid[x][y] = new Array(resolution + 1)
-        for (let z = 0; z <= resolution; z++) {
-          grid[x][y][z] = 0
-        }
+  // 3D Metaball Shader Material
+  const material = useMemo(() => new THREE.ShaderMaterial({
+    uniforms: {
+      uTime: { value: 0 },
+      metaballs: { value: Array.from({ length: 8 }, (_, i) => 
+        metaballs[i] ? new THREE.Vector3(metaballs[i].x, metaballs[i].y, metaballs[i].z) : new THREE.Vector3(0, 0, 0)
+      ) },
+      metaballRadius: { value: Array.from({ length: 8 }, (_, i) => 
+        metaballs[i] ? metaballs[i].radius : 0.1
+      ) },
+      metaballColors: { value: Array.from({ length: 8 }, (_, i) => 
+        metaballs[i] ? metaballs[i].color : new THREE.Color(0.2, 0.6, 1.0)
+      ) },
+      metaballPhases: { value: Array.from({ length: 8 }, (_, i) => 
+        metaballs[i] ? metaballs[i].phase : 0
+      ) },
+      lightPosition: { value: new THREE.Vector3(2, 2, 2) }
+    },
+    vertexShader: `
+      varying vec3 vNormal;
+      varying vec3 vPosition;
+      varying vec2 vUv;
+      
+      void main() {
+        vNormal = normalize(normalMatrix * normal);
+        vPosition = position;
+        vUv = uv;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
       }
-    }
-    
-    // Calculate field values
-    for (let x = 0; x <= resolution; x++) {
-      for (let y = 0; y <= resolution; y++) {
-        for (let z = 0; z <= resolution; z++) {
-          let value = 0
-          const pos = {
-            x: (x / resolution - 0.5) * size,
-            y: (y / resolution - 0.5) * size,
-            z: (z / resolution - 0.5) * size
-          }
-          
-          metaballs.forEach(ball => {
-            const dist = Math.sqrt(
-              Math.pow(pos.x - ball.x, 2) +
-              Math.pow(pos.y - ball.y, 2) +
-              Math.pow(pos.z - ball.z, 2)
-            )
-            value += ball.radius / (dist + 0.1)
-          })
-          
-          grid[x][y][z] = value
-        }
+    `,
+    fragmentShader: `
+      precision highp float;
+      
+      uniform float uTime;
+      uniform vec3 metaballs[8];
+      uniform float metaballRadius[8];
+      uniform vec3 metaballColors[8];
+      uniform float metaballPhases[8];
+      uniform vec3 lightPosition;
+      
+      varying vec3 vNormal;
+      varying vec3 vPosition;
+      varying vec2 vUv;
+      
+      // Smooth minimum for gooey effect
+      float smin(float a, float b, float k) {
+        float h = clamp(0.5 + 0.5 * (b - a) / k, 0.0, 1.0);
+        return mix(b, a, h) - k * h * (1.0 - h);
       }
-    }
-    
-    // Marching Cubes algorithm
-    for (let x = 0; x < resolution; x++) {
-      for (let y = 0; y < resolution; y++) {
-        for (let z = 0; z < resolution; z++) {
-          const cube = [
-            grid[x][y][z],
-            grid[x + 1][y][z],
-            grid[x + 1][y + 1][z],
-            grid[x][y + 1][z],
-            grid[x][y][z + 1],
-            grid[x + 1][y][z + 1],
-            grid[x + 1][y + 1][z + 1],
-            grid[x][y + 1][z + 1]
-          ]
+      
+      // Metaball field calculation
+      float metaballField(vec3 pos) {
+        float field = 0.0;
+        float k = 0.3;
+        
+        for (int i = 0; i < 8; i++) {
+          vec3 ballPos = metaballs[i];
+          float radius = metaballRadius[i];
+          float phase = metaballPhases[i];
           
-          // Check if any vertex is above threshold
-          if (cube.some(v => v > threshold)) {
-            const pos = {
-              x: (x / resolution - 0.5) * size,
-              y: (y / resolution - 0.5) * size,
-              z: (z / resolution - 0.5) * size
-            }
-            
-            vertices.push(pos.x, pos.y, pos.z)
-            
-            // Calculate normal
-            const normalX = (grid[x + 1][y][z] - grid[x][y][z]) / step
-            const normalY = (grid[x][y + 1][z] - grid[x][y][z]) / step
-            const normalZ = (grid[x][y][z + 1] - grid[x][y][z]) / step
-            
-            const length = Math.sqrt(normalX * normalX + normalY * normalY + normalZ * normalZ)
-            normals.push(
-              length > 0 ? normalX / length : 0,
-              length > 0 ? normalY / length : 1,
-              length > 0 ? normalZ / length : 0
-            )
+          // Emergence animation - balls come out and go back in
+          float emergence = sin(uTime * 0.5 + phase) * 0.5 + 0.5;
+          float currentRadius = radius * emergence;
+          
+          // Add some movement
+          ballPos += vec3(
+            sin(uTime * 0.3 + phase) * 0.2,
+            cos(uTime * 0.4 + phase) * 0.2,
+            sin(uTime * 0.2 + phase) * 0.1
+          );
+          
+          float dist = distance(pos, ballPos);
+          float metaball = currentRadius / (dist * dist + 0.001);
+          
+          if (i == 0) {
+            field = metaball;
+          } else {
+            field = smin(field, metaball, k);
           }
         }
+        
+        return field;
       }
-    }
-    
-    const geometry = new THREE.BufferGeometry()
-    geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3))
-    geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3))
-    
-    return geometry
-  }, [metaballs, resolution, size, threshold])
-
-  // Material with animated colors
-  const material = useMemo(() => new THREE.MeshPhongMaterial({
-    color: 0xff6b6b,
+      
+      void main() {
+        vec3 pos = vPosition;
+        float field = metaballField(pos);
+        
+        // Threshold for surface
+        float threshold = 0.3;
+        float mask = smoothstep(threshold - 0.1, threshold + 0.1, field);
+        
+        if (mask < 0.01) discard;
+        
+        // Color mixing based on metaball influence
+        vec3 color = vec3(0.0);
+        float totalInfluence = 0.0;
+        
+        for (int i = 0; i < 8; i++) {
+          vec3 ballPos = metaballs[i];
+          float radius = metaballRadius[i];
+          float phase = metaballPhases[i];
+          
+          float emergence = sin(uTime * 0.5 + phase) * 0.5 + 0.5;
+          float currentRadius = radius * emergence;
+          
+          ballPos += vec3(
+            sin(uTime * 0.3 + phase) * 0.2,
+            cos(uTime * 0.4 + phase) * 0.2,
+            sin(uTime * 0.2 + phase) * 0.1
+          );
+          
+          float dist = distance(pos, ballPos);
+          float influence = currentRadius / (dist * dist + 0.001);
+          
+          if (influence > threshold * 0.5) {
+            color += metaballColors[i] * influence;
+            totalInfluence += influence;
+          }
+        }
+        
+        if (totalInfluence > 0.0) {
+          color /= totalInfluence;
+        } else {
+          color = vec3(0.2, 0.6, 1.0); // Default cyan
+        }
+        
+        // Add some iridescence
+        float iridescence = sin(dot(normalize(vNormal), vec3(1.0, 0.0, 0.0)) * 5.0 + uTime * 2.0) * 0.3 + 0.7;
+        color *= iridescence;
+        
+        // Lighting
+        vec3 lightDir = normalize(lightPosition - vPosition);
+        float lighting = max(dot(vNormal, lightDir), 0.0);
+        color *= lighting * 0.8 + 0.2;
+        
+        // Add glow
+        float glow = smoothstep(0.0, 1.0, field) * 0.3;
+        color += vec3(0.5, 0.8, 1.0) * glow;
+        
+        gl_FragColor = vec4(color, mask);
+      }
+    `,
     transparent: true,
-    opacity: 0.8,
-    side: THREE.DoubleSide,
-    shininess: 100
-  }), [])
+    side: THREE.DoubleSide
+  }), [metaballs])
 
   // Animation
   useFrame((state, delta) => {
-    setTime(prev => prev + delta)
+    material.uniforms.uTime.value = state.clock.getElapsedTime()
     
-    setMetaballs(prev => prev.map(ball => ({
-      ...ball,
-      x: ball.x + ball.vx,
-      y: ball.y + ball.vy,
-      z: ball.z + ball.vz,
-      vx: ball.x > size/2 || ball.x < -size/2 ? -ball.vx : ball.vx,
-      vy: ball.y > size/2 || ball.y < -size/2 ? -ball.vy : ball.vy,
-      vz: ball.z > size/2 || ball.z < -size/2 ? -ball.vz : ball.vz,
-    })))
+    // Update metaball positions and properties
+    setMetaballs(prev => prev.map(ball => {
+      let newX = ball.x + ball.vx
+      let newY = ball.y + ball.vy
+      let newZ = ball.z + ball.vz
+      
+      // Bounce off walls
+      if (newX > 1.5 || newX < -1.5) ball.vx *= -0.8
+      if (newY > 1.5 || newY < -1.5) ball.vy *= -0.8
+      if (newZ > 1.5 || newZ < -1.5) ball.vz *= -0.8
+      
+      return {
+        ...ball,
+        x: Math.max(-1.5, Math.min(1.5, newX)),
+        y: Math.max(-1.5, Math.min(1.5, newY)),
+        z: Math.max(-1.5, Math.min(1.5, newZ)),
+      }
+    }))
+    
+    // Update shader uniforms
+    for (let i = 0; i < 8; i++) {
+      if (metaballs[i]) {
+        material.uniforms.metaballs.value[i].set(metaballs[i].x, metaballs[i].y, metaballs[i].z)
+        material.uniforms.metaballRadius.value[i] = metaballs[i].radius
+        material.uniforms.metaballColors.value[i].copy(metaballs[i].color)
+        material.uniforms.metaballPhases.value[i] = metaballs[i].phase
+      }
+    }
   })
 
   const { camera, viewport } = useThree()
@@ -155,7 +216,16 @@ export default function AgenticBubble({ styleType = 9, cameraMode = 'default' })
 
   return (
     <>
-      <mesh ref={meshRef} position={[0, yBottom, 0]} geometry={generateMetaballGeometry} material={material} />
+      {/* Environment lighting */}
+      <ambientLight intensity={0.4} />
+      <directionalLight position={[3, 3, 3]} intensity={1.0} />
+      <pointLight position={[-2, 2, 2]} intensity={0.6} color="#ff6b9d" />
+      <pointLight position={[2, -2, -2]} intensity={0.4} color="#87ceeb" />
+      
+      <mesh ref={meshRef} position={[0, yBottom, 0]}>
+        <sphereGeometry args={[radius * 0.8, 64, 64]} />
+        <primitive object={material} attach="material" />
+      </mesh>
     </>
   )
 }

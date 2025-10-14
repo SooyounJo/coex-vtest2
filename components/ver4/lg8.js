@@ -1,41 +1,57 @@
 import { useFrame, useThree } from '@react-three/fiber'
 import { useMemo, useRef, useState, useEffect } from 'react'
-import { MarchingCubes } from '@react-three/drei'
 import * as THREE from 'three'
 
 export default function AgenticBubble({ styleType = 8, cameraMode = 'default' }) {
   const meshRef = useRef()
   const [metaballs, setMetaballs] = useState([])
   const [time, setTime] = useState(0)
-  
-  // Create initial metaballs
+
+  // Create 3 simple metaballs
   useEffect(() => {
-    const balls = []
-    for (let i = 0; i < 5; i++) {
-      balls.push({
-        x: (Math.random() - 0.5) * 4,
-        y: (Math.random() - 0.5) * 4,
-        z: (Math.random() - 0.5) * 4,
-        radius: Math.random() * 0.6 + 0.4,
-        vx: (Math.random() - 0.5) * 0.02,
-        vy: (Math.random() - 0.5) * 0.02,
-        vz: (Math.random() - 0.5) * 0.02,
-      })
-    }
+    const balls = [
+      {
+        x: 1.2,
+        y: 0.5,
+        z: 0,
+        radius: 0.6,
+        vx: -0.008,
+        vy: 0.005,
+        vz: 0,
+      },
+      {
+        x: -1.2,
+        y: -0.5,
+        z: 0,
+        radius: 0.7,
+        vx: 0.008,
+        vy: -0.005,
+        vz: 0,
+      },
+      {
+        x: 0,
+        y: 0,
+        z: 0,
+        radius: 0.5,
+        vx: 0.003,
+        vy: -0.003,
+        vz: 0,
+      }
+    ]
     setMetaballs(balls)
   }, [])
 
-  // Liquid-like material with proper shading
+  // Simple liquid material
   const material = useMemo(() => new THREE.MeshPhysicalMaterial({
-    color: 0x00ff88,
+    color: 0xff6b9d,
     transparent: true,
-    opacity: 0.9,
+    opacity: 0.7,
     side: THREE.DoubleSide,
     roughness: 0.1,
     metalness: 0.0,
     clearcoat: 1.0,
     clearcoatRoughness: 0.1,
-    transmission: 0.1,
+    transmission: 0.3,
     thickness: 0.5,
     ior: 1.33,
     envMapIntensity: 1.0
@@ -51,15 +67,15 @@ export default function AgenticBubble({ styleType = 8, cameraMode = 'default' })
       let newZ = ball.z + ball.vz
       
       // Bounce off walls
-      if (newX > 4 || newX < -4) ball.vx *= -1
-      if (newY > 4 || newY < -4) ball.vy *= -1
-      if (newZ > 4 || newZ < -4) ball.vz *= -1
+      if (newX > 2 || newX < -2) ball.vx *= -0.9
+      if (newY > 2 || newY < -2) ball.vy *= -0.9
+      if (newZ > 2 || newZ < -2) ball.vz *= -0.9
       
       return {
         ...ball,
-        x: newX,
-        y: newY,
-        z: newZ,
+        x: Math.max(-2, Math.min(2, newX)),
+        y: Math.max(-2, Math.min(2, newY)),
+        z: Math.max(-2, Math.min(2, newZ)),
       }
     }))
   })
@@ -74,25 +90,21 @@ export default function AgenticBubble({ styleType = 8, cameraMode = 'default' })
   return (
     <>
       {/* Environment lighting */}
-      <ambientLight intensity={0.4} />
-      <directionalLight position={[5, 5, 5]} intensity={0.8} />
-      <pointLight position={[-5, -5, -5]} intensity={0.3} color="#00ff88" />
-      
-      <MarchingCubes
-        ref={meshRef}
-        position={[0, yBottom, 0]}
-        resolution={64}
-        maxPolyCount={50000}
-        enableUvs={true}
-        enableColors={false}
-        material={material}
-      >
-        {metaballs.map((ball, i) => (
-          <mesh key={i} position={[ball.x, ball.y, ball.z]}>
-            <sphereGeometry args={[ball.radius, 32, 32]} />
-          </mesh>
-        ))}
-      </MarchingCubes>
+      <ambientLight intensity={0.6} />
+      <directionalLight position={[3, 3, 3]} intensity={1.2} />
+      <pointLight position={[-2, 2, 2]} intensity={0.8} color="#ff6b9d" />
+      <pointLight position={[2, -2, -2]} intensity={0.6} color="#87ceeb" />
+
+      {/* Render individual spheres that will blend together */}
+      {metaballs.map((ball, i) => (
+        <mesh 
+          key={i} 
+          position={[ball.x, ball.y + yBottom, ball.z]}
+          material={material}
+        >
+          <sphereGeometry args={[ball.radius, 32, 32]} />
+        </mesh>
+      ))}
     </>
   )
 }
