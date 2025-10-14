@@ -8,6 +8,17 @@ import ShaderBubble4 from '../components/ver1/4'
 import ShaderBubble5 from '../components/ver1/5'
 import ShaderBubble6 from '../components/ver1/6'
 import ShaderBubble7 from '../components/ver1/7'
+import ShaderBubble8 from '../components/ver1/8'
+import ShaderBubble9 from '../components/ver1/9'
+import LG1 from '../components/ver3/lg1'
+import LG2 from '../components/ver3/lg2'
+import LG3 from '../components/ver3/lg3'
+import LG4 from '../components/ver3/lg4'
+import LG5 from '../components/ver3/lg5'
+import LG6 from '../components/ver3/lg6'
+import LG7 from '../components/ver4/lg7'
+import LG8 from '../components/ver4/lg8'
+import LG9 from '../components/ver4/lg9'
 import Type1 from '../components/ver2/type1'
 import Type2 from '../components/ver2/type2'
 import Type3 from '../components/ver2/type3'
@@ -30,6 +41,10 @@ export default function Home() {
       setSelectedStyle(1)
     } else if (version === 'ver2') {
       setSelectedStyle('type1')
+    } else if (version === 'ver3') {
+      setSelectedStyle('lg1')
+    } else if (version === 'ver4') {
+      setSelectedStyle('lg7')
     }
     // 6, 7번 상태 리셋
     setIsActive6(false)
@@ -50,7 +65,7 @@ export default function Home() {
   useEffect(() => {
     if (router.query.style) {
       const style = parseInt(router.query.style)
-      if ((style >= 1 && style <= 7) || style === 22) {
+      if ((style >= 1 && style <= 9) || style === 22) {
         setSelectedStyle(style)
       }
     }
@@ -87,6 +102,18 @@ export default function Home() {
           >
             Mobile
           </button>
+          <button 
+            className={`version-btn ${selectedVersion === 'ver3' ? 'active' : ''}`}
+            onClick={() => handleVersionChange('ver3')}
+          >
+            Ver.3
+          </button>
+          <button 
+            className={`version-btn ${selectedVersion === 'ver4' ? 'active' : ''}`}
+            onClick={() => handleVersionChange('ver4')}
+          >
+            Ver.4
+          </button>
         </div>
 
         {/* 3D Canvas */}
@@ -108,9 +135,20 @@ export default function Home() {
              selectedStyle === 5 ? <ShaderBubble5 /> : 
                  selectedStyle === 6 ? <ShaderBubble6 isActive={isActive6} /> :
                  selectedStyle === 7 ? <ShaderBubble7 isActive={isActive7} /> :
+                 selectedStyle === 8 ? <ShaderBubble8 /> :
+                 selectedStyle === 9 ? <ShaderBubble9 /> :
                  selectedStyle === 'type1' ? <Type1 /> :
                  selectedStyle === 'type2' ? <Type2 /> :
                  selectedStyle === 'type3' ? <Type3 /> :
+                 selectedStyle === 'lg1' ? <LG1 /> :
+                 selectedStyle === 'lg2' ? <LG2 /> :
+                 selectedStyle === 'lg3' ? <LG3 /> :
+                 selectedStyle === 'lg4' ? <LG4 /> :
+                 selectedStyle === 'lg5' ? <LG5 /> :
+                 selectedStyle === 'lg6' ? <LG6 /> :
+                 selectedStyle === 'lg7' ? <LG7 /> :
+                 selectedStyle === 'lg8' ? <LG8 /> :
+                 selectedStyle === 'lg9' ? <LG9 /> :
                  <ShaderBubble />}
           </Canvas>
           
@@ -183,6 +221,16 @@ export default function Home() {
               </div>
             </div>
           )}
+          {selectedVersion === 'ver1' && selectedStyle === 8 && (
+            <div className="title-overlay">
+              <h1 className="style-title">Tube Form</h1>
+            </div>
+          )}
+          {selectedVersion === 'ver1' && selectedStyle === 9 && (
+            <div className="title-overlay">
+              <h1 className="style-title">Donut Basic</h1>
+            </div>
+          )}
           {selectedVersion === 'ver2' && selectedStyle === 'type1' && (
              <div className="title-overlay">
                <h1 className="style-title">Type 1</h1>
@@ -203,7 +251,7 @@ export default function Home() {
         {/* 하단 버튼 - 버전에 따라 조건부 표시 */}
         {selectedVersion === 'ver1' && (
           <div className="version-switcher-bottom" role="navigation" aria-label="Style Switcher ver1">
-            {[1, 2, 22, 3, 4, 5, 6, 7].map((num) => (
+            {[1, 2, 22, 3, 4, 5, 6, 7, 8, 9].map((num) => (
               <button
                 key={num}
                 className={`ver-button ${selectedStyle === num ? 'active' : ''} ${num === 6 || num === 7 ? 'red-button' : ''} ${num === 4 || num === 5 ? 'blue-button' : ''}`}
@@ -224,6 +272,34 @@ export default function Home() {
                 onClick={() => handleStyleChange(type)}
               >
                 {type.replace('type', 'T')}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {selectedVersion === 'ver3' && (
+          <div className="version-switcher-bottom ver3-buttons" role="navigation" aria-label="Style Switcher ver3">
+            {['lg1', 'lg2', 'lg3', 'lg4', 'lg5', 'lg6'].map((lg) => (
+              <button
+                key={lg}
+                className={`ver-button ${selectedStyle === lg ? 'active' : ''}`}
+                onClick={() => handleStyleChange(lg)}
+              >
+                {lg.replace('lg', 'LG')}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {selectedVersion === 'ver4' && (
+          <div className="version-switcher-bottom ver4-buttons" role="navigation" aria-label="Style Switcher ver4">
+            {['lg7', 'lg8', 'lg9'].map((lg) => (
+              <button
+                key={lg}
+                className={`ver-button ${selectedStyle === lg ? 'active' : ''}`}
+                onClick={() => handleStyleChange(lg)}
+              >
+                {lg.replace('lg', 'LG')}
               </button>
             ))}
           </div>
@@ -370,6 +446,34 @@ export default function Home() {
         .ver2-buttons .ver-button.active {
           background: #32cd32 !important;
           box-shadow: 0 0 15px rgba(50, 205, 50, 0.7);
+        }
+
+        .ver3-buttons .ver-button {
+          background: #ffd700 !important;
+          color: #000000 !important;
+        }
+
+        .ver3-buttons .ver-button:hover {
+          background: #ffed4e !important;
+        }
+
+        .ver3-buttons .ver-button.active {
+          background: #ff8c00 !important;
+          box-shadow: 0 0 15px rgba(255, 140, 0, 0.7);
+        }
+
+        .ver4-buttons .ver-button {
+          background: #ff69b4 !important;
+          color: #ffffff !important;
+        }
+
+        .ver4-buttons .ver-button:hover {
+          background: #ff1493 !important;
+        }
+
+        .ver4-buttons .ver-button.active {
+          background: #dc143c !important;
+          box-shadow: 0 0 15px rgba(220, 20, 60, 0.7);
         }
 
 

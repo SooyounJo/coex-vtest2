@@ -8,17 +8,17 @@ export default function ShaderBubble6({ isActive = false }) {
   
   // 1.js와 동일한 기본 셰이더 + 물방울 효과 추가
   const material = useMemo(() => new THREE.ShaderMaterial({
-      uniforms: {
-        time: { value: 0 },
-        lightDir: { value: new THREE.Vector3(0.2, 0.9, 0.3).normalize() },
-        ringDir: { value: new THREE.Vector3(0.08, 0.56, 0.86).normalize() },
+    uniforms: {
+      time: { value: 0 },
+      lightDir: { value: new THREE.Vector3(0.2, 0.9, 0.3).normalize() },
+      ringDir: { value: new THREE.Vector3(0.08, 0.56, 0.86).normalize() },
         camY: { value: 0.0 },
         moveActive: { value: 0.0 },
         camZ: { value: 6.0 },
         zoomActive: { value: 0.0 },
         transitionProgress: { value: 0 },
         scaleFactor: { value: 1.0 }, // 구 크기 조절
-      },
+    },
     vertexShader: `
       uniform float scaleFactor;
       varying vec2 vUv;
@@ -44,7 +44,7 @@ export default function ShaderBubble6({ isActive = false }) {
       uniform float transitionProgress; // 물방울 효과 트랜지션 진행도
       varying vec2 vUv;
       varying vec3 vNormal;
-      
+
       float hash(vec2 p){ p=fract(p*vec2(123.34,345.45)); p+=dot(p,p+34.345); return fract(p.x*p.y);}      
       float n2(vec2 p){ vec2 i=floor(p); vec2 f=fract(p); float a=hash(i); float b=hash(i+vec2(1.0,0.0)); float c=hash(i+vec2(0.0,1.0)); float d=hash(i+vec2(1.0,1.0)); vec2 u=f*f*(3.0-2.0*f); return mix(mix(a,b,u.x), mix(c,d,u.x), u.y);}      
       float noise(vec2 p) { return sin(p.x) * cos(p.y) + sin(p.x*2.0)*cos(p.y*2.0)*0.5; }
@@ -189,9 +189,9 @@ export default function ShaderBubble6({ isActive = false }) {
   const yBottom = window.innerWidth <= 768 ? -v.height / 2 + radius + margin : -v.height / 2 + radius + margin
 
   return (
-    <mesh ref={meshRef} position={[0, yBottom, 0]}>
-      <sphereGeometry args={[radius, 256, 256]} />
-      <primitive object={material} attach="material" />
-    </mesh>
+      <mesh ref={meshRef} position={[0, yBottom, 0]}>
+        <sphereGeometry args={[radius, 256, 256]} />
+        <primitive object={material} attach="material" />
+      </mesh>
   )
 }
