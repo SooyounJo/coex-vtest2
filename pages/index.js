@@ -81,7 +81,7 @@ export default function Home() {
             gl={{ antialias: true, powerPreference: 'high-performance' }}
             camera={{ position: [0, 0, 6], fov: 50 }}
           >
-            <color attach="background" args={["#ffffff"]} />
+            <color attach="background" args={["#F5F5DC"]} />
             <ambientLight intensity={0.3} />
             <directionalLight position={[2, 3, 2]} intensity={0.5} />
             {selectedStyle === 1 ? <ShaderBubble /> : 
@@ -89,87 +89,12 @@ export default function Home() {
              selectedStyle === 3 ? <ShaderBubble3 /> : 
              selectedStyle === 4 ? <ShaderBubble4 /> : 
              selectedStyle === 5 ? <ShaderBubble5 /> : 
-                 selectedStyle === 6 ? <ShaderBubble6 isActive={isActive6} /> :
-                 selectedStyle === 7 ? <ShaderBubble7 isActive={isActive7} /> :
-                 selectedStyle === 8 ? <ShaderBubble8 /> :
-                 selectedStyle === 9 ? <ShaderBubble9 /> :
-                 <ShaderBubble />}
+             selectedStyle === 6 ? <ShaderBubble6 /> :
+             selectedStyle === 7 ? <ShaderBubble7 isActive={isActive7} /> :
+             selectedStyle === 8 ? <ShaderBubble8 /> :
+             selectedStyle === 9 ? <ShaderBubble9 /> :
+             <ShaderBubble />}
           </Canvas>
-          
-          {/* 버튼별 제목 표시 - ver1만 */}
-          {selectedVersion === 'ver1' && selectedStyle === 1 && (
-            <div className="title-overlay">
-              <h1 className="style-title">Main State</h1>
-            </div>
-          )}
-          {selectedVersion === 'ver1' && selectedStyle === 2 && (
-            <div className="title-overlay">
-              <h1 className="style-title">Speaking</h1>
-            </div>
-          )}
-          {selectedVersion === 'ver1' && selectedStyle === 3 && (
-            <div className="title-overlay">
-              <h1 className="style-title">Thinking</h1>
-            </div>
-          )}
-          {selectedVersion === 'ver1' && selectedStyle === 4 && (
-            <div className="title-overlay">
-              <h1 className="style-title">Zoom In/Out</h1>
-            </div>
-          )}
-          {selectedVersion === 'ver1' && selectedStyle === 5 && (
-            <div className="title-overlay">
-              <h1 className="style-title">Up and Down</h1>
-            </div>
-          )}
-          {selectedVersion === 'ver1' && selectedStyle === 6 && (
-             <div className="title-overlay">
-               <h1 className="style-title">Speaking Transition</h1>
-              <div className="toggle-controls">
-                <button 
-                  className={`toggle-btn deactivate-btn ${!isActive6 ? 'active' : ''}`}
-                  onClick={() => setIsActive6(false)}
-                >
-                  Deactivate
-                </button>
-                <button 
-                  className={`toggle-btn activate-btn ${isActive6 ? 'active' : ''}`}
-                  onClick={() => setIsActive6(true)}
-                >
-                  Activate
-                </button>
-              </div>
-            </div>
-          )}
-          {selectedVersion === 'ver1' && selectedStyle === 7 && (
-             <div className="title-overlay">
-               <h1 className="style-title">Thinking Transition</h1>
-              <div className="toggle-controls">
-                <button 
-                  className={`toggle-btn deactivate-btn ${!isActive7 ? 'active' : ''}`}
-                  onClick={() => setIsActive7(false)}
-                >
-                  Deactivate
-                </button>
-                <button 
-                  className={`toggle-btn activate-btn ${isActive7 ? 'active' : ''}`}
-                  onClick={() => setIsActive7(true)}
-                >
-                  Activate
-                </button>
-              </div>
-            </div>
-          )}
-          {selectedVersion === 'ver1' && selectedStyle === 8 && (
-            <div className="title-overlay">
-              <h1 className="style-title">Tube Form</h1>
-            </div>
-          )}
-          {selectedVersion === 'ver1' && selectedStyle === 9 && (
-            <div className="title-overlay">
-              <h1 className="style-title">Donut Basic</h1>
-            </div>
-          )}
         </div>
 
         {/* 하단 버튼 - 버전에 따라 조건부 표시 */}
@@ -178,7 +103,7 @@ export default function Home() {
             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
               <button
                 key={num}
-                className={`ver-button ${selectedStyle === num ? 'active' : ''} ${num === 6 || num === 7 ? 'red-button' : ''} ${num === 4 || num === 5 ? 'blue-button' : ''}`}
+                className={`ver-button ${selectedStyle === num ? 'active' : ''}`}
                 onClick={() => handleStyleChange(num)}
               >
                 {num}

@@ -6,165 +6,205 @@ export default function AgenticBubble({ styleType = 6, cameraMode = 'default' })
   const material = useMemo(() => new THREE.ShaderMaterial({
     uniforms: {
       time: { value: 0 },
-      lightDir: { value: new THREE.Vector3(0.2, 0.9, 0.3).normalize() },
-      ringDir: { value: new THREE.Vector3(0.08, 0.56, 0.86).normalize() },
-      camY: { value: 0.0 },
-      moveActive: { value: 0.0 },
-      camZ: { value: 6.0 },
-      zoomActive: { value: 0.0 },
     },
     vertexShader: `
       varying vec2 vUv;
-      varying vec3 vNormal;
-      varying vec3 vWorldPos;
+      varying vec3 vPosition;
+      uniform float time;
+      
       void main() {
         vUv = uv;
-        vNormal = normalize(normalMatrix * normal);
-        vec4 worldPos = modelMatrix * vec4(position, 1.0);
-        vWorldPos = worldPos.xyz;
-        gl_Position = projectionMatrix * viewMatrix * worldPos;
+        vec3 pos = position;
+        
+        // 외곽 일렁임 감소 - 중앙만 일렁임 (가장자리로 갈수록 감소)
+        float edgeFactor = 1.0 - abs(uv.x - 0.5) * 2.0; // 중앙 1.0, 가장자리 0.0
+        edgeFactor = pow(edgeFactor, 2.0); // 가장자리 감소를 더 강하게
+        
+        // 리본의 웨이브 효과 (외곽은 거의 없음)
+        float wave1 = sin(pos.y * 2.0 + time * 1.5) * 0.2 * edgeFactor;
+        float wave2 = cos(pos.y * 3.0 + time * 2.0) * 0.1 * edgeFactor;
+        float wave3 = sin(pos.y * 5.0 - time * 1.0) * 0.05 * edgeFactor;
+        
+        pos.x += wave1 + wave2 + wave3;
+        pos.z += cos(pos.y * 2.5 + time * 1.8) * 0.15 * edgeFactor;
+        
+        // DNA처럼 회전하는 스프링 효과 (유지)
+        float twist = pos.y * 0.5 + time * 0.8;
+        float x = pos.x * cos(twist) - pos.z * sin(twist);
+        float z = pos.x * sin(twist) + pos.z * cos(twist);
+        pos.x = x;
+        pos.z = z;
+        
+        vPosition = pos;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
       }
     `,
     fragmentShader: `
       precision highp float;
       uniform float time;
-      uniform vec3 lightDir;
-      uniform vec3 ringDir;
-      uniform float camY;       // 카메라 Y 위치
-      uniform float moveActive; // 상하 이동 모드 활성화 여부 (0 or 1)
-      uniform float camZ;       // 카메라 Z 위치
-      uniform float zoomActive; // 줌 모드 활성화 여부 (0 or 1)
       varying vec2 vUv;
-      varying vec3 vNormal;
-      float hash(vec2 p){ p=fract(p*vec2(123.34,345.45)); p+=dot(p,p+34.345); return fract(p.x*p.y);}      
-      float n2(vec2 p){ vec2 i=floor(p); vec2 f=fract(p); float a=hash(i); float b=hash(i+vec2(1.0,0.0)); float c=hash(i+vec2(0.0,1.0)); float d=hash(i+vec2(1.0,1.0)); vec2 u=f*f*(3.0-2.0*f); return mix(mix(a,b,u.x), mix(c,d,u.x), u.y);}      
-      float noise(vec2 p) { return sin(p.x) * cos(p.y) + sin(p.x*2.0)*cos(p.y*2.0)*0.5; }
-      float elasticWave(float x, float frequency, float amplitude){ float wave=sin(x*frequency)*amplitude; float decay=exp(-x*0.05); float bounce=sin(x*frequency*2.0)*amplitude*0.3; return (wave+bounce)*decay; }
-      float breathingMotion(float time){ float slow=sin(time*0.3)*0.15; float fast=sin(time*0.8)*0.08; float deep=sin(time*0.15)*0.25; return slow+fast+deep; }
-      float bumpMove(float c,float w,float f){ float d0=abs(f-(c-1.0)); float d1=abs(f-c); float d2=abs(f-(c+1.0)); float d=min(d0,min(d1,d2)); float aa=fwidth(f)*1.2; return smoothstep(w+aa,0.0+aa,d);}      
-      vec3 bandWeights(float f){ float width=0.25; float y=bumpMove(0.18,width,f); float p=bumpMove(0.52,width,f); float u=bumpMove(0.86,width,f); return vec3(y,p,u);}      
-      void main(){
-        vec3 N=normalize(vNormal); vec3 L=normalize(lightDir); vec2 p=vUv-0.5; float r=length(p);
-        float breathing=breathingMotion(time); r=r*(1.0+breathing*0.3);
-        float topness=clamp(dot(N,normalize(ringDir))*0.5+0.5,0.0,1.0);
-        vec3 peach=vec3(1.00,0.90,0.72); vec3 pink=vec3(1.00,0.70,0.90); vec3 purple=vec3(0.82,0.68,1.00);
-        vec3 base=mix(pink,peach,clamp(0.5+0.5*topness,0.0,1.0)); base=mix(base,purple,smoothstep(0.0,0.35,1.0-topness));
-        float loopSec=10.0; float loopT=mod(time,loopSec)/loopSec; float phase=-loopT;
-        float ripple1=noise(vUv*3.0+time*0.5)*0.05; float ripple2=noise(vUv*5.0+time*0.3)*0.025; float ripple3=noise(vUv*7.0+time*0.7)*0.015; float totalRipple=ripple1+ripple2+ripple3;
-        float elastic1=elasticWave(topness*2.0+time*0.4,3.0,0.08); float elastic2=elasticWave(topness*3.0+time*0.6,2.0,0.04); float totalElastic=elastic1+elastic2;
-        float blurAmount=0.01; float f1=topness*1.8+phase+totalRipple+totalElastic; float f2=topness*1.8+phase+blurAmount+totalRipple*0.8+totalElastic*0.6; float f3=topness*1.8+phase+(blurAmount*1.5)+totalRipple*0.6+totalElastic*0.4;
-        float perturb=0.01*n2(vUv*1.5+time*0.05); vec3 w1=bandWeights(f1+perturb); vec3 w2=bandWeights(f2+perturb*0.8); vec3 w3=bandWeights(f3+perturb*0.6);
-        float wobble1=0.997+0.001*n2(vUv*2.2+time*0.06); float wobble2=0.997+0.001*n2(vUv*2.2+time*0.06+1.7); float wobble3=0.997+0.001*n2(vUv*2.2+time*0.06+3.1); w1*=wobble1; w2*=wobble2; w3*=wobble3;
-        vec3 cY=vec3(0.80,0.40,0.70); vec3 cP=vec3(0.85,0.20,0.75); vec3 cU=vec3(0.90,0.50,0.80);
-        w1*=vec3(0.18,1.0,0.95); w2*=vec3(0.18,1.0,0.95); w3*=vec3(0.18,1.0,0.95);
-        vec3 flowColor1=cY*w1.x + cP*w1.y + cU*w1.z; vec3 flowColor2=cY*w2.x + cP*w2.y + cU*w2.z; vec3 flowColor3=cY*w3.x + cP*w3.y + cU*w3.z; vec3 flowColor=(0.5*flowColor1 + 0.35*flowColor2 + 0.15*flowColor3);
-        float mask1=clamp(w1.x+w1.y+w1.z,0.0,1.0); float mask2=clamp(w2.x+w2.y+w2.z,0.0,1.0); float mask3=clamp(w3.x+w3.y+w3.z,0.0,1.0); float flowMaskAvg=clamp((0.5*mask1 + 0.35*mask2 + 0.15*mask3),0.0,1.0);
-        vec3 lit=base; lit=mix(lit,flowColor,flowMaskAvg*0.4);
-        vec3 rippleColor=vec3(0.8,0.4,0.6)*totalRipple*0.2; vec3 elasticColor=vec3(0.8,0.3,0.7)*totalElastic*0.15; lit+=rippleColor+elasticColor;
-        vec3 V=vec3(0.0,0.0,1.0); float fres=pow(1.0 - max(dot(N,V),0.0),2.6); vec3 rimGlow=vec3(0.8,0.3,0.7)*fres*0.3; float softHalo=smoothstep(0.34,0.10,r)*0.08; vec3 glow=rimGlow + vec3(0.8,0.4,0.8)*softHalo; lit+=glow;
-        lit+=vec3(0.8,0.2,0.6)*(1.0-topness)*0.1; vec3 gray=vec3(dot(lit,vec3(0.299,0.587,0.114)));
-        float loopPhase = 0.5 + 0.5 * sin(6.28318530718 * time / 7.0);
-        float sat = 1.0 + 0.85 * loopPhase;
-        lit = mix(gray, lit, sat);
-        float brightness = 1.0 + 0.14 * loopPhase;
-        lit *= brightness;
-        float contrast = 1.0 + 0.32 * loopPhase;
-        lit = (lit - 0.5) * contrast + 0.5;
-        lit=pow(lit,vec3(0.9)); lit*=1.05; lit=mix(lit,vec3(1.0),0.02); lit=clamp(lit,0.0,1.0);
-        float edgeFeather=smoothstep(0.52,0.36,r); float alpha=0.80*edgeFeather + fres*0.10; alpha=clamp(alpha,0.0,0.96);
-        gl_FragColor=vec4(lit,alpha);
+      varying vec3 vPosition;
+      
+      // 노이즈 함수
+      float hash(float n) { 
+        return fract(sin(n) * 43758.5453123); 
+      }
+      
+      float noise(vec2 p) {
+        vec2 i = floor(p);
+        vec2 f = fract(p);
+        f = f * f * (3.0 - 2.0 * f);
+        float n = i.x + i.y * 57.0;
+        return mix(mix(hash(n), hash(n + 1.0), f.x),
+                   mix(hash(n + 57.0), hash(n + 58.0), f.x), f.y);
+      }
+      
+      // 생생하고 명확한 그라데이션 색상 (이미지 기반)
+      vec3 getColor(float t, vec2 uv) {
+        // 위치와 시간에 따른 노이즈로 컬러 변화
+        float n1 = noise(vec2(t * 3.0 + time * 0.1, uv.y * 2.0));
+        float n2 = noise(vec2(t * 5.0 - time * 0.15, uv.y * 3.0 + 10.0));
+        float n3 = noise(vec2(t * 4.0 + time * 0.08, uv.y * 1.5 + 20.0));
+        
+        // 컬러 뭉침 효과 - 특정 영역에서 압축/확장
+        float clumpNoise1 = noise(vec2(uv.y * 4.0 + time * 0.1, t * 2.0));
+        float clumpNoise2 = noise(vec2(uv.y * 6.0 - time * 0.08, t * 3.0 + 10.0));
+        
+        // 뭉침 강도 (0.5 = 균일, 0.0 = 압축, 1.0 = 확장)
+        float clumpFactor = clumpNoise1 * 0.6 + clumpNoise2 * 0.4;
+        clumpFactor = pow(clumpFactor, 2.0); // 압축 영역을 더 뚜렷하게
+        
+        // t값을 뭉침에 따라 비선형 변환
+        t = pow(t, mix(0.5, 2.0, clumpFactor)); // 뭉치거나 펼쳐짐
+        
+        // 노이즈로 컬러 위치 왜곡 (더 미묘하게)
+        t = fract(t + n1 * 0.12 + sin(time * 0.2 + uv.y * 5.0) * 0.05);
+        
+        // 옐로-그린-블루 위주의 컬러 팔레트
+        vec3 c1 = vec3(1.00, 0.98, 0.45); // 밝은 옐로
+        vec3 c2 = vec3(0.85, 0.95, 0.50); // 옐로 그린
+        vec3 c3 = vec3(0.50, 0.92, 0.55); // 라임 그린
+        vec3 c4 = vec3(0.45, 0.88, 0.75); // 청록색
+        vec3 c5 = vec3(0.40, 0.75, 0.95); // 스카이 블루
+        vec3 c6 = vec3(0.35, 0.60, 0.98); // 선명한 블루
+        
+        // 랜덤한 경계값들 (노이즈 기반, 더 불규칙하게)
+        float b1 = 0.12 + n1 * 0.15;
+        float b2 = 0.28 + n2 * 0.18;
+        float b3 = 0.48 + n3 * 0.12;
+        float b4 = 0.65 + n1 * 0.15;
+        float b5 = 0.82 + n2 * 0.12;
+        
+        vec3 color;
+        if (t < b1) {
+          color = mix(c1, c2, smoothstep(0.0, b1, t));
+        } else if (t < b2) {
+          color = mix(c2, c3, smoothstep(b1, b2, t));
+        } else if (t < b3) {
+          color = mix(c3, c4, smoothstep(b2, b3, t));
+        } else if (t < b4) {
+          color = mix(c4, c5, smoothstep(b3, b4, t));
+        } else if (t < b5) {
+          color = mix(c5, c6, smoothstep(b4, b5, t));
+        } else {
+          color = mix(c6, c1, smoothstep(b5, 1.0, t));
+        }
+        
+        // 미묘한 컬러 변화 추가 (더 적게)
+        color += vec3(n2 * 0.015, n3 * 0.015, n1 * 0.015);
+        
+        return color;
+      }
+      
+      void main() {
+        // 세로 방향으로 흐르는 그라데이션
+        float flow = vUv.y * 0.3 - time * 0.15;
+        
+        // 고급스러운 파스텔 색상 (랜덤 간격)
+        vec3 color = getColor(flow, vUv);
+        
+        // 블러 강도가 변하는 패턴 생성 (노이즈 기반)
+        float blurPattern1 = noise(vec2(vUv.y * 8.0 + time * 0.3, vUv.x * 5.0));
+        float blurPattern2 = noise(vec2(vUv.y * 12.0 - time * 0.2, vUv.x * 8.0 + 10.0));
+        float blurPattern3 = noise(vec2(vUv.y * 15.0 + time * 0.4, vUv.x * 10.0 + 20.0));
+        
+        // 블러 패턴 조합 (0.5 = 약한 블러, 1.0 = 강한 블러) - 더 블러리하게
+        float blurIntensity = blurPattern1 * 0.5 + blurPattern2 * 0.3 + blurPattern3 * 0.2;
+        blurIntensity = 0.5 + blurIntensity * 0.5; // 최소 0.5 블러부터 시작
+        
+        // 선명한 영역과 블러 영역에 따라 다른 glow 적용
+        float sharpGlow = 1.0 - abs(vUv.x - 0.5) * 2.0;
+        float softGlow = 1.0 - abs(vUv.x - 0.5) * 1.5;
+        
+        // 블러 강도에 따라 적당한 블러 ~ 강한 블러 glow 믹스 (더 블러리하게)
+        float mediumBlur = pow(max(sharpGlow, 0.0), 1.5); // 더 블러리한 기본
+        float strongBlur = pow(max(softGlow, 0.0), 2.5);  // 매우 강한 블러
+        float glow = mix(mediumBlur, strongBlur, blurIntensity);
+        glow = max(glow, 0.45); // 최소 glow 값 조정
+        
+        // 일렁이는 효과
+        float ripple = sin(vUv.y * 10.0 + time * 3.0) * 0.1 + 
+                       cos(vUv.y * 15.0 - time * 2.0) * 0.05;
+        color += ripple;
+        
+        // 가장자리 페이드도 블러 패턴에 따라 변화
+        float mediumEdge = smoothstep(0.0, 0.08, vUv.x) * smoothstep(1.0, 0.92, vUv.x);
+        float softEdge = smoothstep(0.0, 0.18, vUv.x) * smoothstep(1.0, 0.82, vUv.x);
+        float edgeFade = mix(mediumEdge, softEdge, blurIntensity);
+        edgeFade = max(edgeFade, 0.35); // 가장자리도 최소값 보장
+        
+        // 테두리에 핑크 추가 (더 강하게)
+        float edgeDistance = min(vUv.x, 1.0 - vUv.x); // 양쪽 가장자리까지의 거리
+        float pinkEdge = smoothstep(0.3, 0.0, edgeDistance); // 가장자리로 갈수록 강해짐
+        vec3 pinkTint = vec3(1.0, 0.7, 0.85); // 더 선명한 핑크
+        color = mix(color, pinkTint, pinkEdge * 0.6); // 핑크를 더 강하게 블렌드
+        
+        // 밝기 조절 (더 밝고 생생하게)
+        color *= 1.5; // 밝기 크게 증가
+        color = pow(color, vec3(0.8)); // 대비 더 강하게
+        
+        // 채도 대폭 증가로 생생하게
+        vec3 gray = vec3(dot(color, vec3(0.299, 0.587, 0.114)));
+        color = mix(gray, color, 1.4); // 채도 더 높게
+        
+        // 알파값 (블러 패턴에 따라 변화)
+        float sharpAlpha = 0.98;
+        float softAlpha = 0.85;
+        float alpha = mix(sharpAlpha, softAlpha, blurIntensity) * glow * edgeFade;
+        alpha = clamp(alpha, 0.6, 1.0); // 최소 opacity 0.6 보장으로 항상 잘 보이게
+        
+        gl_FragColor = vec4(color, alpha);
       }
     `,
     transparent: true,
+    side: THREE.DoubleSide,
+    depthWrite: false,
   }), [])
-
-  // 스프링 상태 저장 (속도)
-  const zVelocityRef = useRef(0)
-  const yVelocityRef = useRef(0)
 
   useFrame((state, delta) => {
     material.uniforms.time.value += delta
-    
-    // 카메라 애니메이션 처리 (스프링 기반, 미세 진동)
-    const { camera } = state
-    const time = state.clock.getElapsedTime()
-    const dt = Math.min(delta, 0.05)
-
-    const baseZ = 6 // Canvas 기본 카메라 z와 동기화
-    const baseY = 0
-
-    // 더 넓은 진폭과 개선된 스프링 애니메이션
-    const periodZoom = 8 // 초 (더 빠른 주기)
-    const periodMove = 8 // 초 (더 빠른 주기)
-    const ampZ = 2.0 // z 진폭 (더 강하게)
-    const ampY = 0.8 // y 진폭 (더 강하게)
-
-    // 스프링 기반 타겟 계산 (빠르게 들어가고 천천히 나오는 이징)
-    let targetZ = baseZ
-    let targetY = baseY
-
-    if (cameraMode === 'zoom') {
-      const t = (time / periodZoom) % 1.0
-      // 빠르게 들어가고 천천히 나오는 이징 함수
-      const easedT = t < 0.5 
-        ? 2 * t * t // 빠르게 들어가기 (0~0.5)
-        : 1 - 2 * (1 - t) * (1 - t) // 천천히 나오기 (0.5~1)
-      targetZ = baseZ + Math.sin(easedT * Math.PI * 2) * ampZ
-    }
-
-    if (cameraMode === 'move') {
-      const t = (time / periodMove) % 1.0
-      // 빠르게 들어가고 천천히 나오는 이징 함수
-      const easedT = t < 0.5 
-        ? 2 * t * t // 빠르게 들어가기 (0~0.5)
-        : 1 - 2 * (1 - t) * (1 - t) // 천천히 나오기 (0.5~1)
-      targetY = baseY + Math.sin(easedT * Math.PI * 2) * ampY
-    }
-
-    // 스프링 파라미터 (더 반응적인 스프링)
-    const stiffnessZ = 12.0
-    const stiffnessY = 12.0
-    const damping = 0.75 // 더 강한 감쇠로 자연스러운 움직임
-
-    // Z 축 스프링 업데이트
-    const currentZ = camera.position.z
-    const accZ = (targetZ - currentZ) * stiffnessZ
-    zVelocityRef.current += accZ * dt
-    zVelocityRef.current *= damping
-    const newZ = currentZ + zVelocityRef.current * dt
-
-    // Y 축 스프링 업데이트
-    const currentY = camera.position.y
-    const accY = (targetY - currentY) * stiffnessY
-    yVelocityRef.current += accY * dt
-    yVelocityRef.current *= damping
-    const newY = currentY + yVelocityRef.current * dt
-
-    camera.position.set(0, newY, newZ)
-
-    // 셰이더로 현재 카메라 Y와 이동 모드 전달
-    material.uniforms.camY.value = newY
-    material.uniforms.moveActive.value = cameraMode === 'move' ? 1.0 : 0.0
-    material.uniforms.camZ.value = newZ
-    material.uniforms.zoomActive.value = cameraMode === 'zoom' ? 1.0 : 0.0
   })
 
   const meshRef = useRef()
-  const { camera, viewport } = useThree()
-  const v = viewport.getCurrentViewport(camera, [0, 0, 0])
-  // ver3 모달에서 항상 모바일 크기로 렌더링 (하단 잘리도록)
-  const isVer3 = typeof window !== 'undefined' && window.location.pathname === '/ver3'
-  const radius = Math.min(v.width, v.height) * (isVer3 ? 0.8 : 0.33)
-  const margin = isVer3 ? v.height * 0.01 : v.height * 0.035
-  const yBottom = isVer3 ? -v.height / 2 + radius * 0.6 + margin : -v.height / 2 + radius + margin
+  const { viewport } = useThree()
+  
+  // 리본 크기 설정 - 화면 높이보다 길게 (끝부분이 잘려서 보이도록)
+  const width = 2.0
+  const height = viewport.height * 2.2
+
+  useFrame((state) => {
+    if (!meshRef.current) return
+    const time = state.clock.elapsedTime
+    
+    // 리본이 머리를 가지고 아래에서 위로 이동하는 듯한 움직임
+    // 화면 아래쪽 영역에 고정하여 끝부분(머리)이 보이게
+    meshRef.current.position.y = -viewport.height * 0.3
+  })
 
   return (
-    <>
-      <mesh ref={meshRef} position={[0, yBottom, 0]}>
-        <sphereGeometry args={[radius, 256, 256]} />
+    <mesh ref={meshRef} position={[0, 0, 0]}>
+      <planeGeometry args={[width, height, 64, 256]} />
         <primitive object={material} attach="material" />
       </mesh>
-    </>
   )
 }
-
