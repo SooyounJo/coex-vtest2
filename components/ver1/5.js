@@ -199,8 +199,8 @@ export default function RibbonShader5() {
 
   const { viewport } = useThree()
   
-  // 리본 크기 설정 - 더 두껍게
-  const width = 2.5
+  // 리본 크기 설정
+  const width = 2.0
   const height = viewport.height * 1.5
 
   return (
